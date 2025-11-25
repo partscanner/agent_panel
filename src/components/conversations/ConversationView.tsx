@@ -18,6 +18,13 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
   const conversation = conversationData?.conversation;
   const messages = messagesData?.messages || [];
 
+  // Debug logging
+  console.log('[ConversationView] ConversationId:', conversationId);
+  console.log('[ConversationView] Conversation data:', conversationData);
+  console.log('[ConversationView] Messages data:', messagesData);
+  console.log('[ConversationView] Messages array:', messages);
+  console.log('[ConversationView] Messages length:', messages.length);
+
   const handleSendMessage = async (text: string) => {
     try {
       await sendMessage.mutateAsync({ conversationId, text });

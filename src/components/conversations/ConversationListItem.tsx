@@ -12,10 +12,22 @@ export const ConversationListItem = ({
   isActive,
   onClick,
 }: ConversationListItemProps) => {
-  const displayName = conversation.customerPhone || conversation.customerId;
-  const lastMessageTime = formatDistanceToNow(new Date(conversation.lastMessageAt), {
-    addSuffix: true,
-  });
+  // Debug log
+  console.log('[ConversationListItem] Rendering conversation:', conversation);
+  
+  const displayName = conversation.customerPhone || conversation.customerId || 'Unknown';
+  
+  // Safe date handling
+  let lastMessageTime = 'recently';
+  try {
+    if (conversation.lastMessageAt) {
+      lastMessageTime = formatDistanceToNow(new Date(conversation.lastMessageAt), {
+        addSuffix: true,
+      });
+    }
+  } catch (e) {
+    console.error('[ConversationListItem] Error formatting date:', e);
+  }
 
   return (
     <div

@@ -9,6 +9,10 @@ interface MessageListProps {
 export const MessageList = ({ messages }: MessageListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Debug logging
+  console.log('[MessageList] Rendering messages:', messages);
+  console.log('[MessageList] Message count:', messages.length);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };

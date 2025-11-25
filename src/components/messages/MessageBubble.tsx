@@ -7,7 +7,15 @@ interface MessageBubbleProps {
 
 export const MessageBubble = ({ message }: MessageBubbleProps) => {
   const isInbound = message.direction === 'inbound';
-  const time = format(new Date(message.timestamp), 'HH:mm');
+  
+  // Safe date handling
+  let time = '';
+  try {
+    time = format(new Date(message.timestamp), 'HH:mm');
+  } catch (e) {
+    console.error('[MessageBubble] Error formatting timestamp:', e, message);
+    time = 'now';
+  }
 
   return (
     <div className={`flex ${isInbound ? 'justify-start' : 'justify-end'} mb-3`}>

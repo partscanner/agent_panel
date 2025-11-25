@@ -15,6 +15,11 @@ export const ConversationList = ({
   const { t } = useTranslation();
   const { data, isLoading, error } = useConversations('open');
 
+  // Debug logging
+  console.log('[ConversationList] Full data:', data);
+  console.log('[ConversationList] Items:', data?.items);
+  console.log('[ConversationList] Items length:', data?.items?.length);
+
   if (isLoading) {
     return (
       <div className="h-full bg-white">
