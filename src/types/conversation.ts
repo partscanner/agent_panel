@@ -2,6 +2,9 @@ export interface Conversation {
   id: string;
   customerId: string;
   customerPhone?: string;
+  userPhone?: string;
+  displayName?: string;
+  userName?: string;
   status: 'open' | 'closed';
   context?: ConversationContext;
   lastMessageAt: string;

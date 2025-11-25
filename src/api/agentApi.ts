@@ -13,17 +13,38 @@ import type {
 
 // Transform backend conversation to frontend format
 const transformConversation = (backendConv: any): Conversation => {
+  // Extract phone from various possible locations
+  const phone = backendConv.userPhone 
+    || backendConv.user_phone 
+    || backendConv.userId?.phone 
+    || backendConv.customerPhone 
+    || backendConv.customer_phone;
+
+  // Extract display name if available
+  const displayName = backendConv.displayName 
+    || backendConv.display_name 
+    || backendConv.userName 
+    || backendConv.user_name 
+    || backendConv.userId?.name;
+
   return {
     id: backendConv._id || backendConv.id,
-    customerId: backendConv.customerId || backendConv.customer_id || '',
-    customerPhone: backendConv.customerPhone || backendConv.customer_phone,
+    customerId: backendConv.customerId || backendConv.customer_id || backendConv.userId?._id || '',
+    customerPhone: phone,
+    userPhone: phone,
+    displayName,
+    userName: displayName,
     status: backendConv.status,
-    context: backendConv.context,
+    context: {
+      plate: backendConv.plate || backendConv.context?.plate,
+      vehicle: backendConv.vehicle || backendConv.context?.vehicle,
+      partDescription: backendConv.partDescription || backendConv.part_description || backendConv.context?.partDescription,
+    },
     lastMessageAt: backendConv.lastMessageAt || backendConv.last_message_at || backendConv.updatedAt,
     createdAt: backendConv.createdAt || backendConv.created_at,
     updatedAt: backendConv.updatedAt || backendConv.updated_at,
     unreadCount: backendConv.unreadCount || backendConv.unread_count || 0,
-    lastMessage: backendConv.lastMessage || backendConv.lastMessageText || backendConv.last_message_text,
+    lastMessage: backendConv.lastMessage || backendConv.lastMessageText || backendConv.last_message_text || backendConv.lastMessagePreview,
   };
 };
 

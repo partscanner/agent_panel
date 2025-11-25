@@ -15,7 +15,13 @@ export const ConversationListItem = ({
   // Debug log
   console.log('[ConversationListItem] Rendering conversation:', conversation);
   
-  const displayName = conversation.customerPhone || conversation.customerId || 'Unknown';
+  // Priority: displayName > userName > userPhone > customerPhone > customerId > 'Unknown'
+  const displayName = conversation.displayName 
+    || conversation.userName 
+    || conversation.userPhone 
+    || conversation.customerPhone 
+    || conversation.customerId 
+    || 'Unknown';
   
   // Safe date handling
   let lastMessageTime = 'recently';
@@ -40,18 +46,13 @@ export const ConversationListItem = ({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          {/* Name and Badge */}
+          {/* Name */}
           <div className="flex items-center gap-2 mb-1">
             <h3 className={`text-sm font-semibold truncate ${
               isActive ? 'text-neutral-900' : 'text-neutral-800'
             }`}>
               {displayName}
             </h3>
-            {conversation.unreadCount && conversation.unreadCount > 0 && (
-              <span className="px-2 py-0.5 text-[10px] font-bold text-white bg-brand-primary rounded-full min-w-[20px] text-center">
-                {conversation.unreadCount}
-              </span>
-            )}
           </div>
           
           {/* Last Message */}
@@ -60,7 +61,7 @@ export const ConversationListItem = ({
           )}
           
           {/* Context Info */}
-          {conversation.context && (
+          {conversation.context && (conversation.context.plate || conversation.context.partDescription) && (
             <div className="flex flex-wrap gap-2 mt-2">
               {conversation.context.plate && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-brand-secondary bg-neutral-100 rounded-md">
@@ -79,9 +80,14 @@ export const ConversationListItem = ({
           )}
         </div>
         
-        {/* Time */}
-        <div className="flex-shrink-0">
+        {/* Time and Unread Badge - Right Side */}
+        <div className="flex flex-col items-end gap-1 flex-shrink-0">
           <span className="text-[10px] text-neutral-400 font-medium">{lastMessageTime}</span>
+          {conversation.unreadCount && conversation.unreadCount > 0 && (
+            <span className="inline-flex min-w-[24px] justify-center rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
+              {conversation.unreadCount}
+            </span>
+          )}
         </div>
       </div>
     </div>
