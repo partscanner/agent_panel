@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../api/authApi';
 import type { Agent, AuthContextType } from '../types/agent';
 import { socketClient } from '../services/socketClient';
@@ -10,6 +11,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [agent, setAgent] = useState<Agent | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const initAuth = async () => {
@@ -17,7 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
           const agentData = await authApi.getMe();
           setAgent(agentData);
-          socketClient.connect(token);
+          socketClient.connect(token, queryClient);
         } catch (error) {
           console.error('Failed to fetch agent profile:', error);
           localStorage.removeItem('token');
@@ -28,14 +30,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     initAuth();
-  }, [token]);
+  }, [token, queryClient]);
 
   const login = async (email: string, password: string) => {
     const response = await authApi.login({ email, password });
     localStorage.setItem('token', response.token);
     setToken(response.token);
     setAgent(response.agent);
-    socketClient.connect(response.token);
+    socketClient.connect(response.token, queryClient);
   };
 
   const logout = () => {

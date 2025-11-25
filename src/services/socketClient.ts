@@ -1,13 +1,20 @@
 import { io, Socket } from 'socket.io-client';
+import type { QueryClient } from '@tanstack/react-query';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
 
 class SocketClient {
   private socket: Socket | null = null;
+  private queryClient: QueryClient | null = null;
 
-  connect(token: string) {
+  connect(token: string, queryClient?: QueryClient) {
     if (this.socket?.connected) {
       return this.socket;
+    }
+
+    // Store queryClient for invalidation
+    if (queryClient) {
+      this.queryClient = queryClient;
     }
 
     this.socket = io(SOCKET_URL, {
@@ -27,17 +34,29 @@ class SocketClient {
       console.error('[Socket] Connection error:', error);
     });
 
-    // Listen to real-time events
+    // Listen to real-time events and invalidate React Query cache
     this.socket.on('conversation:new', (data) => {
       console.log('[Socket] New conversation:', data);
+      // Refresh conversations list
+      this.queryClient?.invalidateQueries({ queryKey: ['conversations', 'open'] });
     });
 
     this.socket.on('conversation:updated', (data) => {
       console.log('[Socket] Conversation updated:', data);
+      // Refresh conversations list and specific conversation
+      this.queryClient?.invalidateQueries({ queryKey: ['conversations'] });
+      if (data?.conversationId) {
+        this.queryClient?.invalidateQueries({ queryKey: ['conversation', data.conversationId] });
+      }
     });
 
     this.socket.on('message:new', (data) => {
       console.log('[Socket] New message:', data);
+      // Refresh messages for the specific conversation
+      if (data?.conversationId) {
+        this.queryClient?.invalidateQueries({ queryKey: ['messages', data.conversationId] });
+        this.queryClient?.invalidateQueries({ queryKey: ['conversations'] });
+      }
     });
 
     return this.socket;

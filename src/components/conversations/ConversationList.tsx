@@ -38,7 +38,7 @@ export const ConversationList = ({
     );
   }
 
-  const conversations = data?.conversations || [];
+  const conversations = data?.items || [];
 
   if (conversations.length === 0) {
     return (

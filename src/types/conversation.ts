@@ -19,13 +19,10 @@ export interface ConversationContext {
 
 export interface ConversationsResponse {
   success: boolean;
-  conversations: Conversation[];
-  pagination: {
-    page: number;
-    pageSize: number;
-    total: number;
-    totalPages: number;
-  };
+  items: Conversation[];
+  page: number;
+  pageSize: number;
+  total: number;
 }
 
 export interface ConversationDetailResponse {
