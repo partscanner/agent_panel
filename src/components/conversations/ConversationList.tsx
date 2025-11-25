@@ -61,11 +61,11 @@ export const ConversationList = ({
   }
 
   return (
-    <div className="h-full flex flex-col bg-white border-r border-neutral-200">
+    <div className="h-full flex flex-col bg-white border-r border-neutral-200 shadow-sm">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-5 py-4">
-        <h2 className="text-lg font-semibold text-neutral-900">{t('conversations.title')}</h2>
-        <p className="text-xs text-neutral-500 mt-0.5">{conversations.length} {conversations.length === 1 ? 'conversation' : 'conversations'}</p>
+        <h2 className="text-lg font-semibold" style={{ color: '#111827' }}>{t('conversations.title')}</h2>
+        <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>{conversations.length} {conversations.length === 1 ? 'conversation' : 'conversations'}</p>
       </div>
       
       {/* Conversation List */}

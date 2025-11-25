@@ -20,7 +20,7 @@ export const MessageInput = ({ onSend, disabled }: MessageInputProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-neutral-200 bg-white px-6 py-4">
+    <form onSubmit={handleSubmit} className="border-t bg-white px-6 py-4" style={{ borderTopColor: '#D1D5DB' }}>
       <div className="flex items-end gap-3">
         {/* Text Input */}
         <div className="flex-1 relative">
@@ -30,7 +30,13 @@ export const MessageInput = ({ onSend, disabled }: MessageInputProps) => {
             onChange={(e) => setText(e.target.value)}
             placeholder={t('conversation.typePlaceholder')}
             disabled={disabled}
-            className="w-full px-4 py-3 pr-12 bg-neutral-50 border border-neutral-200 rounded-2xl text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent focus:bg-white disabled:bg-neutral-100 disabled:cursor-not-allowed transition-all"
+            className="w-full px-4 py-3 pr-12 border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:border-transparent disabled:cursor-not-allowed transition-all"
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderColor: '#D1D5DB',
+              color: '#111827',
+              '--placeholder-color': '#9CA3AF'
+            } as React.CSSProperties}
           />
           {/* Character count or emoji button could go here */}
         </div>
@@ -39,7 +45,22 @@ export const MessageInput = ({ onSend, disabled }: MessageInputProps) => {
         <button
           type="submit"
           disabled={!text.trim() || disabled}
-          className="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-brand-primary hover:bg-brand-primary-dark text-white rounded-2xl shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:bg-neutral-300 disabled:cursor-not-allowed transition-all duration-200 disabled:shadow-none"
+          className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-2xl shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed transition-all duration-200"
+          style={{
+            backgroundColor: (!text.trim() || disabled) ? '#D1D5DB' : '#2563EB',
+            color: '#FFFFFF',
+            opacity: (!text.trim() || disabled) ? 0.6 : 1
+          }}
+          onMouseEnter={(e) => {
+            if (!(!text.trim() || disabled)) {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1D4ED8';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!(!text.trim() || disabled)) {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#2563EB';
+            }
+          }}
           aria-label={t('common.send')}
         >
           {disabled ? (

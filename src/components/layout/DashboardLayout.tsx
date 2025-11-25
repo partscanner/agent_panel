@@ -7,7 +7,7 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
-    <div className="flex flex-col h-screen bg-neutral-100">
+    <div className="flex flex-col h-screen" style={{ backgroundColor: '#F5F5F7' }}>
       <Header />
       <main className="flex-1 overflow-hidden">
         {children}

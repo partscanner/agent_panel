@@ -81,21 +81,21 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Header */}
-      <div className="border-b border-neutral-200 bg-white px-6 py-4 shadow-soft">
+      <div className="border-b bg-white px-6 py-4 shadow-sm" style={{ borderBottomColor: '#E5E7EB' }}>
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             {/* Customer Info */}
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-primary to-brand-primary-dark flex items-center justify-center text-white font-semibold text-sm">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm" style={{ backgroundColor: '#2563EB', color: '#FFFFFF' }}>
                 {(conversation.customerPhone || conversation.customerId).charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-base font-semibold text-neutral-900 truncate">
+                <h2 className="text-base font-semibold truncate" style={{ color: '#111827' }}>
                   {conversation.customerPhone || conversation.customerId}
                 </h2>
                 {isClosed && (
-                  <span className="inline-flex items-center gap-1 text-xs text-neutral-500">
-                    <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full"></span>
+                  <span className="inline-flex items-center gap-1 text-xs" style={{ color: '#6B7280' }}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: '#9CA3AF' }}></span>
                     {t('conversation.closed')}
                   </span>
                 )}
@@ -106,7 +106,7 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
             {conversation.context && (
               <div className="flex flex-wrap gap-2">
                 {conversation.context.plate && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-brand-secondary bg-neutral-100 rounded-lg">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -114,7 +114,7 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
                   </span>
                 )}
                 {vehicleLabel && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-neutral-700 bg-neutral-100 rounded-lg">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
                     </svg>
@@ -122,7 +122,7 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
                   </span>
                 )}
                 {conversation.context.partDescription && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-neutral-700 bg-neutral-100 rounded-lg">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
                     🔧 {conversation.context.partDescription}
                   </span>
                 )}
@@ -135,7 +135,18 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
             <button
               onClick={handleCloseConversation}
               disabled={closeConversation.isPending}
-              className="ml-4 px-4 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="ml-4 px-4 py-2 text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}
+              onMouseEnter={(e) => {
+                if (!closeConversation.isPending) {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#D1D5DB';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!closeConversation.isPending) {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#E5E7EB';
+                }
+              }}
             >
               {t('conversation.close')}
             </button>
@@ -153,8 +164,8 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
           disabled={sendMessage.isPending}
         />
       ) : (
-        <div className="border-t border-neutral-200 bg-neutral-50 px-6 py-4 text-center">
-          <p className="text-sm text-neutral-500">{t('conversation.closed')}</p>
+        <div className="border-t px-6 py-4 text-center" style={{ borderTopColor: '#E5E7EB', backgroundColor: '#F5F5F7' }}>
+          <p className="text-sm" style={{ color: '#6B7280' }}>{t('conversation.closed')}</p>
         </div>
       )}
     </div>

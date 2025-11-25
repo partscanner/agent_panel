@@ -20,17 +20,16 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
   return (
     <div className={`flex ${isInbound ? 'justify-start' : 'justify-end'} mb-3`}>
       <div
-        className={`max-w-[75%] sm:max-w-[60%] px-4 py-2.5 rounded-2xl shadow-sm ${
-          isInbound
-            ? 'bg-white text-neutral-900'
-            : 'bg-gradient-to-br from-brand-primary to-brand-primary-dark text-white'
-        }`}
+        className="max-w-[75%] sm:max-w-[60%] px-4 py-2.5 rounded-2xl shadow-sm"
+        style={{
+          backgroundColor: isInbound ? '#E5E7EB' : '#2563EB',
+          color: isInbound ? '#111827' : '#FFFFFF'
+        }}
       >
         <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.text}</p>
         <div
-          className={`flex items-center gap-1 text-[10px] mt-1.5 ${
-            isInbound ? 'text-neutral-400' : 'text-white/80'
-          }`}
+          className="flex items-center gap-1 text-[10px] mt-1.5"
+          style={{ color: isInbound ? '#6B7280' : 'rgba(255, 255, 255, 0.8)' }}
         >
           <span>{time}</span>
           {!isInbound && (

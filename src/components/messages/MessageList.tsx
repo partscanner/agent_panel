@@ -22,7 +22,7 @@ export const MessageList = ({ messages }: MessageListProps) => {
   }, [messages]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-4 bg-neutral-50 scrollbar-thin">
+    <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-thin" style={{ backgroundColor: '#F5F5F7' }}>
       {messages.length === 0 ? (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
