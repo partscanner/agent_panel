@@ -1,0 +1,48 @@
+{
+  "app": {
+    "title": "Agent Dashboard"
+  },
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "logout": "Logout",
+    "loginError": "Invalid email or password",
+    "loginButton": "Sign In"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "selectConversation": "Select a conversation to start"
+  },
+  "conversations": {
+    "title": "Conversations",
+    "open": "Open",
+    "closed": "Closed",
+    "noConversations": "No conversations found",
+    "searchPlaceholder": "Search conversations..."
+  },
+  "conversation": {
+    "close": "Close Conversation",
+    "closed": "Conversation Closed",
+    "reply": "Reply",
+    "sendMessage": "Send message",
+    "typePlaceholder": "Type a message...",
+    "context": {
+      "plate": "Plate",
+      "vehicle": "Vehicle",
+      "part": "Part"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "send": "Send"
+  }
+}
+

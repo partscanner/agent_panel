@@ -1,0 +1,48 @@
+{
+  "app": {
+    "title": "לוח בקרה סוכנים"
+  },
+  "auth": {
+    "login": "התחברות",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "logout": "התנתקות",
+    "loginError": "אימייל או סיסמה שגויים",
+    "loginButton": "כניסה"
+  },
+  "dashboard": {
+    "title": "לוח בקרה",
+    "selectConversation": "בחר שיחה כדי להתחיל"
+  },
+  "conversations": {
+    "title": "שיחות",
+    "open": "פתוחות",
+    "closed": "סגורות",
+    "noConversations": "לא נמצאו שיחות",
+    "searchPlaceholder": "חיפוש שיחות..."
+  },
+  "conversation": {
+    "close": "סגור שיחה",
+    "closed": "השיחה נסגרה",
+    "reply": "השב",
+    "sendMessage": "שלח הודעה",
+    "typePlaceholder": "הקלד הודעה...",
+    "context": {
+      "plate": "לוחית רישוי",
+      "vehicle": "רכב",
+      "part": "חלק"
+    }
+  },
+  "common": {
+    "loading": "טוען...",
+    "error": "אירעה שגיאה",
+    "retry": "נסה שוב",
+    "cancel": "ביטול",
+    "save": "שמור",
+    "delete": "מחק",
+    "edit": "ערוך",
+    "close": "סגור",
+    "send": "שלח"
+  }
+}
+
