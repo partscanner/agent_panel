@@ -1,10 +1,9 @@
 import { apiClient } from './client';
-import {
+import type {
   ConversationsResponse,
   ConversationDetailResponse,
-  Conversation,
 } from '../types/conversation';
-import {
+import type {
   MessagesResponse,
   SendMessageRequest,
   SendMessageResponse,

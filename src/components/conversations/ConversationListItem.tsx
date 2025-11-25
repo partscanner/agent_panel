@@ -1,4 +1,4 @@
-import { Conversation } from '../../types/conversation';
+import type { Conversation } from '../../types/conversation';
 import { formatDistanceToNow } from 'date-fns';
 
 interface ConversationListItemProps {
