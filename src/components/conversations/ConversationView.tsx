@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConversation, useMessages, useSendMessage, useCloseConversation } from '../../hooks/useConversations';
 import { MessageList } from '../messages/MessageList';
@@ -14,6 +15,7 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
   const { data: messagesData, isLoading: isLoadingMessages } = useMessages(conversationId);
   const sendMessage = useSendMessage();
   const closeConversation = useCloseConversation();
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const conversation = conversationData?.conversation;
   const messages = messagesData?.messages || [];
@@ -40,6 +42,68 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
       } catch (error) {
         console.error('Failed to close conversation:', error);
       }
+    }
+  };
+
+  const handleCopyVehicleSummary = async () => {
+    const vehicle = conversation?.context?.vehicle;
+    const partDescription = conversation?.context?.partDescription;
+    
+    if (!vehicle || typeof vehicle === 'string') {
+      console.log('Vehicle data not available for copying');
+      return;
+    }
+
+    // Build summary string: <MODEL> <YEAR> <ENGINE_CODE> <PART_DESCRIPTION>
+    const parts: string[] = [];
+    
+    // Add model (which might include make)
+    if (vehicle.make && vehicle.model) {
+      parts.push(`${vehicle.make} ${vehicle.model}`);
+    } else if (vehicle.model) {
+      parts.push(vehicle.model);
+    } else if (vehicle.make) {
+      parts.push(vehicle.make);
+    }
+    
+    // Add year
+    if (vehicle.year) {
+      parts.push(String(vehicle.year));
+    }
+    
+    // Add engine code (check multiple possible fields)
+    const engineCode = vehicle.engineCode || vehicle.engine_code || vehicle.engine || vehicle.engine_number;
+    if (engineCode) {
+      parts.push(engineCode);
+    }
+    
+    // Add part description
+    if (partDescription) {
+      parts.push(partDescription);
+    }
+    
+    const summaryText = parts.join(' ').trim();
+    
+    if (!summaryText) {
+      console.log('No vehicle information to copy');
+      return;
+    }
+    
+    // Copy to clipboard
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(summaryText);
+        console.log('Copied:', summaryText);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } else {
+        // Fallback for environments without clipboard API
+        console.log('Clipboard not available. Text to copy:', summaryText);
+        alert(`Copy this text: ${summaryText}`);
+      }
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      alert(`Failed to copy. Text: ${summaryText}`);
     }
   };
 
@@ -104,7 +168,7 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
             
             {/* Context Info */}
             {conversation.context && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {conversation.context.plate && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -125,6 +189,39 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
                     🔧 {conversation.context.partDescription}
                   </span>
+                )}
+                {/* Copy Button */}
+                {(conversation.context.vehicle || conversation.context.partDescription) && (
+                  <button
+                    onClick={handleCopyVehicleSummary}
+                    className="inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1"
+                    style={{ 
+                      color: copySuccess ? '#10B981' : '#6B7280',
+                      backgroundColor: copySuccess ? '#D1FAE5' : '#F3F4F6'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!copySuccess) {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#E5E7EB';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!copySuccess) {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#F3F4F6';
+                      }
+                    }}
+                    aria-label="Copy vehicle info"
+                    title={copySuccess ? 'Copied!' : 'Copy vehicle info'}
+                  >
+                    {copySuccess ? (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                  </button>
                 )}
               </div>
             )}

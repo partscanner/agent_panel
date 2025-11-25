@@ -20,6 +20,10 @@ export interface Vehicle {
   model?: string;
   year?: number | string;
   color?: string;
+  engineCode?: string;
+  engine?: string;
+  engine_code?: string;
+  engine_number?: string;
 }
 
 export interface ConversationContext {
