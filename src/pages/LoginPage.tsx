@@ -103,7 +103,7 @@ export const LoginPage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center items-center py-3.5 px-4 bg-brand-primary hover:bg-brand-primary-dark text-white font-medium rounded-xl shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:bg-neutral-300 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-full flex justify-center items-center py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed transition-all duration-200"
             >
               {isLoading ? (
                 <>
