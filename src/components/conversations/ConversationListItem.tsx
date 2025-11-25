@@ -20,36 +20,58 @@ export const ConversationListItem = ({
   return (
     <div
       onClick={onClick}
-      className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors ${
-        isActive ? 'bg-blue-50 border-l-4 border-l-blue-600' : ''
+      className={`relative px-5 py-4 border-b border-neutral-100 cursor-pointer transition-all ${
+        isActive 
+          ? 'bg-brand-primary/5 border-l-4 border-l-brand-primary' 
+          : 'hover:bg-neutral-50 border-l-4 border-l-transparent'
       }`}
     >
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-semibold text-gray-900 truncate">{displayName}</h3>
+          {/* Name and Badge */}
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className={`text-sm font-semibold truncate ${
+              isActive ? 'text-neutral-900' : 'text-neutral-800'
+            }`}>
+              {displayName}
+            </h3>
             {conversation.unreadCount && conversation.unreadCount > 0 && (
-              <span className="ml-2 px-2 py-0.5 text-xs font-medium text-white bg-blue-600 rounded-full">
+              <span className="px-2 py-0.5 text-[10px] font-bold text-white bg-brand-primary rounded-full min-w-[20px] text-center">
                 {conversation.unreadCount}
               </span>
             )}
           </div>
+          
+          {/* Last Message */}
           {conversation.lastMessage && (
-            <p className="text-sm text-gray-600 truncate">{conversation.lastMessage}</p>
+            <p className="text-xs text-neutral-600 truncate mb-2">{conversation.lastMessage}</p>
           )}
+          
+          {/* Context Info */}
           {conversation.context && (
-            <div className="mt-1 text-xs text-gray-500">
+            <div className="flex flex-wrap gap-2 mt-2">
               {conversation.context.plate && (
-                <span className="mr-2">🚗 {conversation.context.plate}</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-brand-secondary bg-neutral-100 rounded-md">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {conversation.context.plate}
+                </span>
               )}
               {conversation.context.partDescription && (
-                <span>🔧 {conversation.context.partDescription}</span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-neutral-600 bg-neutral-100 rounded-md truncate max-w-[150px]">
+                  🔧 {conversation.context.partDescription}
+                </span>
               )}
             </div>
           )}
         </div>
+        
+        {/* Time */}
+        <div className="flex-shrink-0">
+          <span className="text-[10px] text-neutral-400 font-medium">{lastMessageTime}</span>
+        </div>
       </div>
-      <div className="mt-1 text-xs text-gray-500">{lastMessageTime}</div>
     </div>
   );
 };

@@ -37,13 +37,17 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
   };
 
   if (isLoadingConversation || isLoadingMessages) {
-    return <LoadingSpinner />;
+    return (
+      <div className="h-full bg-white">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   if (!conversation) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-sm text-gray-500">{t('common.error')}</p>
+      <div className="flex items-center justify-center h-full bg-white">
+        <p className="text-sm text-neutral-500">{t('common.error')}</p>
       </div>
     );
   }
@@ -53,45 +57,64 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Header */}
-      <div className="border-b border-gray-200 px-4 py-3">
+      <div className="border-b border-neutral-200 bg-white px-6 py-4 shadow-soft">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              {conversation.customerPhone || conversation.customerId}
-            </h2>
+          <div className="flex-1 min-w-0">
+            {/* Customer Info */}
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-primary to-brand-primary-dark flex items-center justify-center text-white font-semibold text-sm">
+                {(conversation.customerPhone || conversation.customerId).charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-base font-semibold text-neutral-900 truncate">
+                  {conversation.customerPhone || conversation.customerId}
+                </h2>
+                {isClosed && (
+                  <span className="inline-flex items-center gap-1 text-xs text-neutral-500">
+                    <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full"></span>
+                    {t('conversation.closed')}
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            {/* Context Info */}
             {conversation.context && (
-              <div className="mt-1 text-sm text-gray-600">
+              <div className="flex flex-wrap gap-2">
                 {conversation.context.plate && (
-                  <span className="mr-3">
-                    {t('conversation.context.plate')}: {conversation.context.plate}
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-brand-secondary bg-neutral-100 rounded-lg">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {conversation.context.plate}
                   </span>
                 )}
                 {conversation.context.vehicle && (
-                  <span className="mr-3">
-                    {t('conversation.context.vehicle')}: {conversation.context.vehicle}
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-neutral-700 bg-neutral-100 rounded-lg">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                    </svg>
+                    {conversation.context.vehicle}
                   </span>
                 )}
                 {conversation.context.partDescription && (
-                  <span>
-                    {t('conversation.context.part')}: {conversation.context.partDescription}
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-neutral-700 bg-neutral-100 rounded-lg">
+                    🔧 {conversation.context.partDescription}
                   </span>
                 )}
               </div>
             )}
           </div>
+          
+          {/* Close Button */}
           {!isClosed && (
             <button
               onClick={handleCloseConversation}
               disabled={closeConversation.isPending}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="ml-4 px-4 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {t('conversation.close')}
             </button>
-          )}
-          {isClosed && (
-            <span className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-md">
-              {t('conversation.closed')}
-            </span>
           )}
         </div>
       </div>
@@ -100,11 +123,15 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
       <MessageList messages={messages} />
 
       {/* Input */}
-      {!isClosed && (
+      {!isClosed ? (
         <MessageInput
           onSend={handleSendMessage}
           disabled={sendMessage.isPending}
         />
+      ) : (
+        <div className="border-t border-neutral-200 bg-neutral-50 px-6 py-4 text-center">
+          <p className="text-sm text-neutral-500">{t('conversation.closed')}</p>
+        </div>
       )}
     </div>
   );
