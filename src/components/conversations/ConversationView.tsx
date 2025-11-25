@@ -61,6 +61,23 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
 
   const isClosed = conversation.status === 'closed';
 
+  // Format vehicle info for display
+  const formatVehicle = (vehicle: any): string => {
+    if (!vehicle) return '';
+    if (typeof vehicle === 'string') return vehicle;
+    
+    const parts: string[] = [];
+    if (vehicle.make) parts.push(vehicle.make);
+    if (vehicle.model) parts.push(vehicle.model);
+    if (vehicle.year) parts.push(String(vehicle.year));
+    
+    return parts.join(' · ') || '';
+  };
+
+  const vehicleLabel = conversation.context?.vehicle 
+    ? formatVehicle(conversation.context.vehicle) 
+    : '';
+
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Header */}
@@ -96,12 +113,12 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
                     {conversation.context.plate}
                   </span>
                 )}
-                {conversation.context.vehicle && (
+                {vehicleLabel && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-neutral-700 bg-neutral-100 rounded-lg">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
                     </svg>
-                    {conversation.context.vehicle}
+                    {vehicleLabel}
                   </span>
                 )}
                 {conversation.context.partDescription && (

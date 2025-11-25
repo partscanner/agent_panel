@@ -14,9 +14,17 @@ export interface Conversation {
   lastMessage?: string;
 }
 
+export interface Vehicle {
+  plate?: string;
+  make?: string;
+  model?: string;
+  year?: number | string;
+  color?: string;
+}
+
 export interface ConversationContext {
   plate?: string;
-  vehicle?: string;
+  vehicle?: Vehicle | string;
   partDescription?: string;
 }
 
