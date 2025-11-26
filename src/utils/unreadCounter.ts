@@ -20,6 +20,10 @@ export function computeUnreadCount(messages: Message[]): number {
   const lastAgentPos =
     lastAgentIndex === -1 ? -1 : messages.length - 1 - lastAgentIndex;
 
+  if (lastAgentPos === -1) {
+    return 0;
+  }
+
   console.log('lastAgentPos', lastAgentPos);
   console.log('messages.slice(lastAgentPos + 1)', messages.slice(lastAgentPos + 1));
   console.log('messages.slice(lastAgentPos + 1).filter(m => m.direction === "inbound").length', messages.slice(lastAgentPos + 1).filter(m => m.direction === "inbound").length);
