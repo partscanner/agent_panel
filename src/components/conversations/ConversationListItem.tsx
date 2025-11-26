@@ -12,9 +12,6 @@ export const ConversationListItem = ({
   isActive,
   onClick,
 }: ConversationListItemProps) => {
-  // Debug log
-  console.log('[ConversationListItem] Rendering conversation:', conversation);
-  
   // Priority: displayName > userName > userPhone > customerPhone > customerId > 'Unknown'
   const displayName = conversation.displayName 
     || conversation.userName 
@@ -34,6 +31,25 @@ export const ConversationListItem = ({
   } catch (e) {
     console.error('[ConversationListItem] Error formatting date:', e);
   }
+
+  // Calculate effective unread count based on last message direction
+  const unreadCount = conversation.unreadCount ?? 0;
+  const lastMessageDirection = conversation.lastMessageDirection;
+  
+  // Only show badge if:
+  // 1. unreadCount > 0
+  // 2. Last message is from customer (inbound) OR direction is unknown
+  const shouldShowBadge = unreadCount > 0 && 
+    (!lastMessageDirection || lastMessageDirection === 'inbound');
+  
+  // Debug log for unread badge
+  console.log('[ConversationListItem] Unread badge', {
+    id: conversation.id,
+    displayName,
+    lastMessageDirection,
+    unreadCount,
+    shouldShowBadge,
+  });
 
   return (
     <div
@@ -85,10 +101,9 @@ export const ConversationListItem = ({
         {/* Time and Unread Badge - Right Side */}
         <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
           <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>{lastMessageTime}</span>
-          {((conversation.unreadCount || 0) > 0) && 
-           (!conversation.lastMessageDirection || conversation.lastMessageDirection === 'inbound') && (
+          {shouldShowBadge && (
             <span className="inline-flex min-w-[22px] h-[22px] items-center justify-center rounded-full px-2 text-xs font-semibold shadow-md" style={{ backgroundColor: '#EF4444', color: '#FFFFFF' }}>
-              {conversation.unreadCount}
+              {unreadCount}
             </span>
           )}
         </div>
