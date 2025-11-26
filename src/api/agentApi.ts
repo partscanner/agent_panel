@@ -45,6 +45,7 @@ const transformConversation = (backendConv: any): Conversation => {
     updatedAt: backendConv.updatedAt || backendConv.updated_at,
     unreadCount: backendConv.unreadCount || backendConv.unread_count || 0,
     lastMessage: backendConv.lastMessage || backendConv.lastMessageText || backendConv.last_message_text || backendConv.lastMessagePreview,
+    lastMessageDirection: backendConv.lastMessageDirection || backendConv.last_message_direction,
   };
 };
 

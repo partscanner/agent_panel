@@ -171,50 +171,14 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
               <div className="flex flex-wrap items-center gap-2">
                 {conversation.context.plate && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
                     {conversation.context.plate}
                   </span>
                 )}
                 {vehicleLabel && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
-                     {/* Copy Button */}
-                {(conversation.context.vehicle || conversation.context.partDescription) && (
-                  <button
-                    onClick={handleCopyVehicleSummary}
-                    className="inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1"
-                    style={{ 
-                      color: copySuccess ? '#10B981' : '#6B7280',
-                      backgroundColor: copySuccess ? '#D1FAE5' : '#F3F4F6'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!copySuccess) {
-                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#E5E7EB';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!copySuccess) {
-                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#F3F4F6';
-                      }
-                    }}
-                    aria-label="Copy vehicle info"
-                    title={copySuccess ? 'Copied!' : 'Copy vehicle info'}
-                  >
-                    {copySuccess ? (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    )}
-                  </button>
-                )}
-                    {/* <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-                    </svg> */}
+                    </svg>
                     {vehicleLabel}
                   </span>
                 )}
@@ -223,7 +187,39 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
                     🔧 {conversation.context.partDescription}
                   </span>
                 )}
-               
+                {/* Copy Button as Chip */}
+                {(conversation.context.vehicle || conversation.context.partDescription) && (
+                  <button
+                    onClick={handleCopyVehicleSummary}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                    style={{ 
+                      color: copySuccess ? '#10B981' : '#6B7280',
+                      backgroundColor: copySuccess ? '#D1FAE5' : '#E5E7EB'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!copySuccess) {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#D1D5DB';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!copySuccess) {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#E5E7EB';
+                      }
+                    }}
+                    aria-label="Copy vehicle info"
+                    title={copySuccess ? 'Copied!' : 'Copy vehicle info'}
+                  >
+                    {copySuccess ? (
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                  </button>
+                )}
               </div>
             )}
           </div>

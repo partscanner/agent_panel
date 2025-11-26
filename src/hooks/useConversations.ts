@@ -31,6 +31,21 @@ export const useSendMessage = () => {
     mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
       agentApi.sendMessage(conversationId, { text }),
     onSuccess: (_, variables) => {
+      // Optimistically update conversations list to reset unread count
+      queryClient.setQueryData(['conversations', 'open'], (oldData: any) => {
+        if (!oldData?.items) return oldData;
+        
+        return {
+          ...oldData,
+          items: oldData.items.map((conv: any) =>
+            conv.id === variables.conversationId
+              ? { ...conv, unreadCount: 0, lastMessageDirection: 'outbound' }
+              : conv
+          ),
+        };
+      });
+      
+      // Invalidate to fetch fresh data
       queryClient.invalidateQueries({ queryKey: ['messages', variables.conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },

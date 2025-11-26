@@ -12,6 +12,7 @@ export interface Conversation {
   updatedAt: string;
   unreadCount?: number;
   lastMessage?: string;
+  lastMessageDirection?: 'inbound' | 'outbound';
 }
 
 export interface Vehicle {
