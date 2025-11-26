@@ -13,13 +13,20 @@ export function computeUnreadCount(messages: Message[]): number {
   const lastAgentIndex = [...messages].reverse()
     .findIndex(m => m.direction === 'outbound');
 
+  console.log('lastAgentIndex', lastAgentIndex);
+  
+
   // Convert to position from start, or -1 if no outbound message
   const lastAgentPos =
     lastAgentIndex === -1 ? -1 : messages.length - 1 - lastAgentIndex;
 
+  console.log('lastAgentPos', lastAgentPos);
+  console.log('messages.slice(lastAgentPos + 1)', messages.slice(lastAgentPos + 1));
+  console.log('messages.slice(lastAgentPos + 1).filter(m => m.direction === "inbound").length', messages.slice(lastAgentPos + 1).filter(m => m.direction === "inbound").length);
+
   // Count inbound messages after the last agent message
-  return messages
-    .slice(lastAgentPos + 1)
-    .filter(m => m.direction === 'inbound').length;
+  const unreadCount = messages.slice(lastAgentPos + 1).filter(m => m.direction === "inbound").length;
+  console.log('unreadCount', unreadCount);
+  return unreadCount
 }
 
