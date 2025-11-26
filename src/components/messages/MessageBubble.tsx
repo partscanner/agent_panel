@@ -1,9 +1,82 @@
+import { useState } from 'react';
+import type { ReactElement } from 'react';
 import type { Message } from '../../types/message';
 import { format } from 'date-fns';
 
 interface MessageBubbleProps {
   message: Message;
 }
+
+interface CollapsibleMessageProps {
+  text: string;
+  isInbound: boolean;
+  maxChars?: number;
+}
+
+// Helper function to linkify URLs in text
+const linkify = (text: string, isInbound: boolean): (string | ReactElement)[] => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts: (string | ReactElement)[] = [];
+  let lastIndex = 0;
+  let match;
+  let keyCounter = 0;
+
+  while ((match = urlRegex.exec(text)) !== null) {
+    // Add text before URL
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    
+    // Add URL as link
+    const url = match[0];
+    parts.push(
+      <a
+        key={`link-${keyCounter++}`}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline break-all hover:opacity-80 transition-opacity"
+        style={{ color: isInbound ? '#2563EB' : '#FFFFFF' }}
+      >
+        {url}
+      </a>
+    );
+    
+    lastIndex = match.index + url.length;
+  }
+  
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+  
+  return parts.length > 0 ? parts : [text];
+};
+
+const CollapsibleMessage = ({ text, isInbound, maxChars = 260 }: CollapsibleMessageProps) => {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = text.length > maxChars;
+  
+  const displayText = isLong && !expanded ? text.substring(0, maxChars) + '…' : text;
+  const linkedContent = linkify(displayText, isInbound);
+  
+  return (
+    <div>
+      <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
+        {linkedContent}
+      </p>
+      {isLong && !expanded && (
+        <button
+          onClick={() => setExpanded(true)}
+          className="mt-1 text-xs font-medium underline opacity-80 hover:opacity-100 transition-opacity"
+          style={{ color: isInbound ? '#111827' : '#FFFFFF' }}
+        >
+          Read more…
+        </button>
+      )}
+    </div>
+  );
+};
 
 export const MessageBubble = ({ message }: MessageBubbleProps) => {
   const isInbound = message.direction === 'inbound';
@@ -26,7 +99,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
           color: isInbound ? '#111827' : '#FFFFFF'
         }}
       >
-        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{message.text}</p>
+        <CollapsibleMessage text={message.text} isInbound={isInbound} />
         <div
           className="flex items-center gap-1 text-[10px] mt-1.5"
           style={{ color: isInbound ? '#6B7280' : 'rgba(255, 255, 255, 0.8)' }}
