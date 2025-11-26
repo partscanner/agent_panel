@@ -57,45 +57,13 @@ class SocketClient {
         const { conversationId, direction, message } = data;
         const msgDirection = direction || message?.direction;
         
-        // Update conversation based on message direction
-        ['open', 'closed'].forEach((status) => {
-          this.queryClient?.setQueryData(['conversations', status], (oldData: any) => {
-            if (!oldData?.items) return oldData;
-            
-            return {
-              ...oldData,
-              items: oldData.items.map((conv: any) => {
-                if (conv.id !== conversationId) return conv;
-                
-                const prevUnread = conv.unreadCount ?? 0;
-                let nextUnread = prevUnread;
-                
-                if (msgDirection === 'inbound') {
-                  // Customer message: increment unread count
-                  nextUnread = prevUnread + 1;
-                } else if (msgDirection === 'outbound') {
-                  // Agent message: reset unread count
-                  nextUnread = 0;
-                }
-                
-                console.log('[Unread] Updating conversation', conversationId, {
-                  direction: msgDirection,
-                  previousUnread: prevUnread,
-                  nextUnread: nextUnread,
-                });
-                
-                return {
-                  ...conv,
-                  lastMessageDirection: msgDirection,
-                  unreadCount: nextUnread,
-                };
-              }),
-            };
-          });
-        });
+        console.log('[Socket] Message direction:', msgDirection, 'for conversation:', conversationId);
         
-        // Refresh messages and conversations to get latest data
+        // Invalidate messages query - this will trigger useEffect in ConversationView
+        // to recompute unread count from the fresh messages array
         this.queryClient?.invalidateQueries({ queryKey: ['messages', conversationId] });
+        
+        // Also invalidate conversations to get updated data from backend
         this.queryClient?.invalidateQueries({ queryKey: ['conversations'] });
       }
     });

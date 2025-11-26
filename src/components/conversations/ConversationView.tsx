@@ -5,6 +5,7 @@ import { useConversation, useMessages, useSendMessage, useCloseConversation } fr
 import { MessageList } from '../messages/MessageList';
 import { MessageInput } from '../messages/MessageInput';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { computeUnreadCount } from '../../utils/unreadCounter';
 
 interface ConversationViewProps {
   conversationId: string;
@@ -22,13 +23,19 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
   const conversation = conversationData?.conversation;
   const messages = messagesData?.messages || [];
 
-  // Sync last message direction from messages when conversation is opened
+  // Compute and sync unread count from messages when conversation is opened
   useEffect(() => {
     if (conversationId && messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
+      const unreadCount = computeUnreadCount(messages);
 
-      // Update conversation list with last message direction (but don't reset unread count)
-      // The unread count should only reset when agent sends a reply, not just by viewing
+      console.log('[Unread] Computing unread count for conversation', conversationId, {
+        totalMessages: messages.length,
+        lastMessageDirection: lastMessage.direction,
+        computedUnreadCount: unreadCount,
+      });
+
+      // Update conversation list with computed unread count and last message direction
       ['open', 'closed'].forEach((status) => {
         queryClient.setQueryData(['conversations', status], (oldData: any) => {
           if (!oldData?.items) return oldData;
@@ -39,7 +46,8 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
               conv.id === conversationId
                 ? {
                   ...conv,
-                  lastMessageDirection: lastMessage.direction
+                  lastMessageDirection: lastMessage.direction,
+                  unreadCount: unreadCount,
                 }
                 : conv
             ),
@@ -205,7 +213,6 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
                 )}
                 {vehicleLabel && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full" style={{ color: '#374151', backgroundColor: '#F3F4F6' }}>
-                    {vehicleLabel}
                     {/* Copy icon inside vehicle chip */}
                     {(conversation.context.vehicle || conversation.context.partDescription) && (
                       <button
@@ -229,6 +236,7 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
                         )}
                       </button>
                     )}
+                    {vehicleLabel}
                   </span>
                 )}
                 {conversation.context.partDescription && (

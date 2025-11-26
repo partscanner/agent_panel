@@ -31,9 +31,9 @@ export const useSendMessage = () => {
     mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
       agentApi.sendMessage(conversationId, { text }),
     onSuccess: (_, variables) => {
-      console.log('[Unread] Agent sent reply, resetting unread count for conversation:', variables.conversationId);
+      console.log('[Unread] Agent sent reply, resetting unread count to 0 for conversation:', variables.conversationId);
       
-      // Optimistically update conversations list to reset unread count
+      // Optimistically set unread count to 0 (agent just replied)
       ['open', 'closed'].forEach((status) => {
         queryClient.setQueryData(['conversations', status], (oldData: any) => {
           if (!oldData?.items) return oldData;
@@ -43,11 +43,9 @@ export const useSendMessage = () => {
             items: oldData.items.map((conv: any) => {
               if (conv.id !== variables.conversationId) return conv;
               
-              const prevUnread = conv.unreadCount ?? 0;
-              
-              console.log('[Unread] Updating conversation', variables.conversationId, {
-                direction: 'outbound',
-                previousUnread: prevUnread,
+              console.log('[Unread] Resetting unread count', {
+                conversationId: variables.conversationId,
+                previousUnread: conv.unreadCount ?? 0,
                 nextUnread: 0,
               });
               
@@ -61,7 +59,8 @@ export const useSendMessage = () => {
         });
       });
       
-      // Invalidate to fetch fresh data
+      // Invalidate messages and conversations to get fresh data
+      // The useEffect in ConversationView will recompute unread count from messages
       queryClient.invalidateQueries({ queryKey: ['messages', variables.conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
