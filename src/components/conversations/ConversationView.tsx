@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { useConversation, useMessages, useSendMessage, useCloseConversation } from '../../hooks/useConversations';
 import { MessageList } from '../messages/MessageList';
 import { MessageInput } from '../messages/MessageInput';
@@ -11,6 +12,7 @@ interface ConversationViewProps {
 
 export const ConversationView = ({ conversationId }: ConversationViewProps) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const { data: conversationData, isLoading: isLoadingConversation } = useConversation(conversationId);
   const { data: messagesData, isLoading: isLoadingMessages } = useMessages(conversationId);
   const sendMessage = useSendMessage();
@@ -19,6 +21,33 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
 
   const conversation = conversationData?.conversation;
   const messages = messagesData?.messages || [];
+
+  // Mark conversation as read when opened
+  useEffect(() => {
+    if (conversationId && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      
+      // Update conversation list to mark as read
+      ['open', 'closed'].forEach((status) => {
+        queryClient.setQueryData(['conversations', status], (oldData: any) => {
+          if (!oldData?.items) return oldData;
+          
+          return {
+            ...oldData,
+            items: oldData.items.map((conv: any) =>
+              conv.id === conversationId
+                ? { 
+                    ...conv, 
+                    unreadCount: 0,
+                    lastMessageDirection: lastMessage.direction
+                  }
+                : conv
+            ),
+          };
+        });
+      });
+    }
+  }, [conversationId, messages, queryClient]);
 
   // Debug logging
   console.log('[ConversationView] ConversationId:', conversationId);
@@ -48,7 +77,7 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
   const handleCopyVehicleSummary = async () => {
     const vehicle = conversation?.context?.vehicle;
     const partDescription = conversation?.context?.partDescription;
-    
+
     if (!vehicle || typeof vehicle === 'string') {
       console.log('Vehicle data not available for copying');
       return;
@@ -56,7 +85,7 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
 
     // Build summary string: <MODEL> <YEAR> <ENGINE_CODE> <PART_DESCRIPTION>
     const parts: string[] = [];
-    
+
     // Add model (which might include make)
     if (vehicle.make && vehicle.model) {
       parts.push(`${vehicle.make} ${vehicle.model}`);
@@ -65,30 +94,30 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
     } else if (vehicle.make) {
       parts.push(vehicle.make);
     }
-    
+
     // Add year
     if (vehicle.year) {
       parts.push(String(vehicle.year));
     }
-    
+
     // Add engine code (check multiple possible fields)
     const engineCode = vehicle.engineCode || vehicle.engine_code || vehicle.engine || vehicle.engine_number;
     if (engineCode) {
       parts.push(engineCode);
     }
-    
+
     // Add part description
     if (partDescription) {
       parts.push(partDescription);
     }
-    
+
     const summaryText = parts.join(' ').trim();
-    
+
     if (!summaryText) {
       console.log('No vehicle information to copy');
       return;
     }
-    
+
     // Copy to clipboard
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -129,17 +158,17 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
   const formatVehicle = (vehicle: any): string => {
     if (!vehicle) return '';
     if (typeof vehicle === 'string') return vehicle;
-    
+
     const parts: string[] = [];
     if (vehicle.make) parts.push(vehicle.make);
     if (vehicle.model) parts.push(vehicle.model);
     if (vehicle.year) parts.push(String(vehicle.year));
-    
+
     return parts.join(' · ') || '';
   };
 
-  const vehicleLabel = conversation.context?.vehicle 
-    ? formatVehicle(conversation.context.vehicle) 
+  const vehicleLabel = conversation.context?.vehicle
+    ? formatVehicle(conversation.context.vehicle)
     : '';
 
   return (
@@ -165,65 +194,55 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
                 )}
               </div>
             </div>
-            
+
             {/* Context Info */}
             {conversation.context && (
               <div className="flex flex-wrap items-center gap-2">
                 {conversation.context.plate && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full" style={{ color: '#374151', backgroundColor: '#F3F4F6' }}>
                     {conversation.context.plate}
                   </span>
                 )}
                 {vehicleLabel && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full" style={{ color: '#374151', backgroundColor: '#F3F4F6' }}>
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
                     </svg>
                     {vehicleLabel}
+                    {/* Copy icon inside vehicle chip */}
+                    {(conversation.context.vehicle || conversation.context.partDescription) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyVehicleSummary();
+                        }}
+                        className="ml-1 hover:opacity-70 transition-opacity focus:outline-none"
+                        aria-label="Copy vehicle info"
+                        title={copySuccess ? 'Copied!' : 'Copy vehicle info'}
+                        style={{ color: copySuccess ? '#10B981' : '#6B7280' }}
+                      >
+                        {copySuccess ? (
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                        )}
+                      </button>
+                    )}
                   </span>
                 )}
                 {conversation.context.partDescription && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full" style={{ color: '#374151', backgroundColor: '#F3F4F6' }}>
                     🔧 {conversation.context.partDescription}
                   </span>
-                )}
-                {/* Copy Button as Chip */}
-                {(conversation.context.vehicle || conversation.context.partDescription) && (
-                  <button
-                    onClick={handleCopyVehicleSummary}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
-                    style={{ 
-                      color: copySuccess ? '#10B981' : '#6B7280',
-                      backgroundColor: copySuccess ? '#D1FAE5' : '#E5E7EB'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!copySuccess) {
-                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#D1D5DB';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!copySuccess) {
-                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#E5E7EB';
-                      }
-                    }}
-                    aria-label="Copy vehicle info"
-                    title={copySuccess ? 'Copied!' : 'Copy vehicle info'}
-                  >
-                    {copySuccess ? (
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    ) : (
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                    )}
-                  </button>
                 )}
               </div>
             )}
           </div>
-          
+
           {/* Close Button */}
           {!isClosed && (
             <button

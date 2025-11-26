@@ -83,10 +83,11 @@ export const ConversationListItem = ({
         </div>
         
         {/* Time and Unread Badge - Right Side */}
-        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
           <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>{lastMessageTime}</span>
-          {conversation.unreadCount && conversation.unreadCount > 0 && conversation.lastMessageDirection === 'inbound' && (
-            <span className="inline-flex min-w-[24px] justify-center rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm" style={{ backgroundColor: '#EF4444', color: '#FFFFFF' }}>
+          {((conversation.unreadCount || 0) > 0) && 
+           (!conversation.lastMessageDirection || conversation.lastMessageDirection === 'inbound') && (
+            <span className="inline-flex min-w-[22px] h-[22px] items-center justify-center rounded-full px-2 text-xs font-semibold shadow-md" style={{ backgroundColor: '#EF4444', color: '#FFFFFF' }}>
               {conversation.unreadCount}
             </span>
           )}

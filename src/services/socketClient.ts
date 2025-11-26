@@ -52,9 +52,35 @@ class SocketClient {
 
     this.socket.on('message:new', (data) => {
       console.log('[Socket] New message:', data);
-      // Refresh messages for the specific conversation
+      
       if (data?.conversationId) {
-        this.queryClient?.invalidateQueries({ queryKey: ['messages', data.conversationId] });
+        const { conversationId, direction, message } = data;
+        
+        // If message is inbound, update conversation lastMessageDirection optimistically
+        if (direction === 'inbound' || message?.direction === 'inbound') {
+          ['open', 'closed'].forEach((status) => {
+            this.queryClient?.setQueryData(['conversations', status], (oldData: any) => {
+              if (!oldData?.items) return oldData;
+              
+              return {
+                ...oldData,
+                items: oldData.items.map((conv: any) =>
+                  conv.id === conversationId
+                    ? { 
+                        ...conv, 
+                        lastMessageDirection: 'inbound',
+                        // Increment unread count if conversation is not currently active
+                        // (We'll rely on backend refetch to correct this)
+                      }
+                    : conv
+                ),
+              };
+            });
+          });
+        }
+        
+        // Refresh messages and conversations
+        this.queryClient?.invalidateQueries({ queryKey: ['messages', conversationId] });
         this.queryClient?.invalidateQueries({ queryKey: ['conversations'] });
       }
     });
