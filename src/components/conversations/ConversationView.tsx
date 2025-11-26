@@ -171,26 +171,15 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
               <div className="flex flex-wrap items-center gap-2">
                 {conversation.context.plate && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
-                    {/* <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg> */}
+                    </svg>
                     {conversation.context.plate}
                   </span>
                 )}
                 {vehicleLabel && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
-                    </svg>
-                    {vehicleLabel}
-                  </span>
-                )}
-                {conversation.context.partDescription && (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
-                    🔧 {conversation.context.partDescription}
-                  </span>
-                )}
-                {/* Copy Button */}
+                     {/* Copy Button */}
                 {(conversation.context.vehicle || conversation.context.partDescription) && (
                   <button
                     onClick={handleCopyVehicleSummary}
@@ -223,6 +212,18 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
                     )}
                   </button>
                 )}
+                    {/* <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                    </svg> */}
+                    {vehicleLabel}
+                  </span>
+                )}
+                {conversation.context.partDescription && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-lg" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
+                    🔧 {conversation.context.partDescription}
+                  </span>
+                )}
+               
               </div>
             )}
           </div>
