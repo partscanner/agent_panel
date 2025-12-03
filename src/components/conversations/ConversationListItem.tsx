@@ -67,35 +67,10 @@ export const ConversationListItem = ({
         borderBottomColor: '#E5E7EB'
       }}
     >
-      {/* Three-dots menu button - RTL aware positioning */}
-      <div 
-        className="absolute top-3 ltr:right-3 rtl:left-3 opacity-0 md:group-hover:opacity-100 md:opacity-100 transition-opacity z-10"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <ConversationAssignmentMenu
-          conversationId={conversation.id}
-          isOpen={isMenuOpen}
-          onClose={() => setIsMenuOpen(false)}
-          position="right"
-          trigger={
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMenuOpen(!isMenuOpen);
-              }}
-              className="p-1.5 rounded-md hover:bg-gray-200 transition-colors"
-              aria-label="Assignment options"
-            >
-              <svg className="w-4 h-4" style={{ color: '#6B7280' }} fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-              </svg>
-            </button>
-          }
-        />
-      </div>
-
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0 pr-8">
+      {/* Three-zone flex layout: content | meta | kebab (or kebab | content | meta in RTL) */}
+      <div className="flex items-start gap-3">
+        {/* Zone A: Main content (text, badges) */}
+        <div className="flex-1 min-w-0">
           {/* Name */}
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-sm font-semibold truncate" style={{ color: '#111827' }}>
@@ -137,14 +112,43 @@ export const ConversationListItem = ({
           )}
         </div>
         
-        {/* Time and Unread Badge - Right Side */}
-        <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-          <span className="text-[10px] font-medium" style={{ color: '#6B7280' }}>{lastMessageTime}</span>
+        {/* Zone B: Time and Unread Badge - RTL aware */}
+        <div className="flex flex-col ltr:items-end rtl:items-start gap-1.5 flex-shrink-0">
+          <span className="text-[10px] font-medium whitespace-nowrap" style={{ color: '#6B7280' }}>{lastMessageTime}</span>
           {shouldShowBadge && (
             <span className="inline-flex min-w-[22px] h-[22px] items-center justify-center rounded-full px-2 text-xs font-semibold shadow-md" style={{ backgroundColor: '#EF4444', color: '#FFFFFF' }}>
               {unreadCount}
             </span>
           )}
+        </div>
+
+        {/* Zone C: Kebab menu button - dedicated column */}
+        <div 
+          className="flex items-start flex-shrink-0"
+          style={{ width: '36px' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ConversationAssignmentMenu
+            conversationId={conversation.id}
+            isOpen={isMenuOpen}
+            onClose={() => setIsMenuOpen(false)}
+            position="right"
+            trigger={
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMenuOpen(!isMenuOpen);
+                }}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                style={{ minWidth: '32px', minHeight: '32px' }}
+                aria-label="Assignment options"
+              >
+                <svg className="w-4 h-4" style={{ color: '#6B7280' }} fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </button>
+            }
+          />
         </div>
       </div>
     </div>
