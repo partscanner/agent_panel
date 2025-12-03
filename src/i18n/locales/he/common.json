@@ -19,6 +19,8 @@
     "open": "פתוחות",
     "closed": "סגורות",
     "noConversations": "לא נמצאו שיחות",
+    "noConversationsAssigned": "אין לך שיחות מוקצות עדיין",
+    "showAllConversations": "הצג את כל השיחות",
     "searchPlaceholder": "חיפוש שיחות...",
     "showOnlyMyConversations": "הצג רק את השיחות שלי"
   },

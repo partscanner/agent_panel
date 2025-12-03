@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { Conversation } from '../../types/conversation';
 import { formatDistanceToNow } from 'date-fns';
+import { ConversationAssignmentMenu } from './ConversationAssignmentMenu';
 
 interface ConversationListItemProps {
   conversation: Conversation;
@@ -12,6 +14,7 @@ export const ConversationListItem = ({
   isActive,
   onClick,
 }: ConversationListItemProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   // Priority: displayName > userName > userPhone > customerPhone > customerId > 'Unknown'
   const displayName = conversation.displayName 
     || conversation.userName 
@@ -54,18 +57,45 @@ export const ConversationListItem = ({
   return (
     <div
       onClick={onClick}
-      className={`relative px-5 py-4 border-b cursor-pointer transition-all ${
+      className={`group relative px-6 py-5 border-b cursor-pointer transition-all rounded-lg mx-2 my-1 ${
         isActive 
-          ? 'border-l-4 border-l-blue-600 shadow-sm' 
-          : 'hover:bg-neutral-50 border-l-4 border-l-transparent'
+          ? 'border-l-4 border-l-blue-600 shadow-md bg-blue-50' 
+          : 'hover:bg-neutral-50 hover:shadow-sm border-l-4 border-l-transparent'
       }`}
       style={{ 
         backgroundColor: isActive ? '#EFF6FF' : 'transparent',
         borderBottomColor: '#E5E7EB'
       }}
     >
+      {/* Three-dots menu button - RTL aware positioning */}
+      <div 
+        className="absolute top-3 ltr:right-3 rtl:left-3 opacity-0 md:group-hover:opacity-100 md:opacity-100 transition-opacity z-10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <ConversationAssignmentMenu
+          conversationId={conversation.id}
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          position="right"
+          trigger={
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMenuOpen(!isMenuOpen);
+              }}
+              className="p-1.5 rounded-md hover:bg-gray-200 transition-colors"
+              aria-label="Assignment options"
+            >
+              <svg className="w-4 h-4" style={{ color: '#6B7280' }} fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+              </svg>
+            </button>
+          }
+        />
+      </div>
+
       <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-8">
           {/* Name */}
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-sm font-semibold truncate" style={{ color: '#111827' }}>

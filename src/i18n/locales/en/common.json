@@ -19,6 +19,8 @@
     "open": "Open",
     "closed": "Closed",
     "noConversations": "No conversations found",
+    "noConversationsAssigned": "You don't have any conversations assigned to you yet",
+    "showAllConversations": "Show all conversations",
     "searchPlaceholder": "Search conversations...",
     "showOnlyMyConversations": "Show only my conversations"
   },
