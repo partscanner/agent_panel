@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { useConversation, useMessages, useSendMessage, useCloseConversation, useAgents, useAssignConversation } from '../../hooks/useConversations';
+import { useConversation, useMessages, useSendMessage, useCloseConversation, useAgents, useAssignConversation, useUpdateWorkflowStatus } from '../../hooks/useConversations';
 import { MessageList } from '../messages/MessageList';
 import { MessageInput } from '../messages/MessageInput';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { computeUnreadCount } from '../../utils/unreadCounter';
 import { useAuth } from '../../hooks/useAuth';
+import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 
 interface ConversationViewProps {
   conversationId: string;
@@ -22,10 +23,13 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
   const sendMessage = useSendMessage();
   const closeConversation = useCloseConversation();
   const assignConversation = useAssignConversation();
+  const updateWorkflowStatus = useUpdateWorkflowStatus();
   const [copySuccess, setCopySuccess] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAgentListOpen, setIsAgentListOpen] = useState(false);
+  const [isWorkflowMenuOpen, setIsWorkflowMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const workflowMenuRef = useRef<HTMLDivElement>(null);
 
   const conversation = conversationData?.conversation;
   const messages = messagesData?.messages || [];
@@ -180,6 +184,15 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
     }
   };
 
+  const handleUpdateWorkflowStatus = async (workflowStatus: 'in_progress' | 'won' | 'lost') => {
+    try {
+      await updateWorkflowStatus.mutateAsync({ conversationId, workflowStatus });
+      setIsWorkflowMenuOpen(false);
+    } catch (error) {
+      console.error('Failed to update workflow status:', error);
+    }
+  };
+
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -194,6 +207,20 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [isMenuOpen]);
+
+  // Close workflow menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (workflowMenuRef.current && !workflowMenuRef.current.contains(event.target as Node)) {
+        setIsWorkflowMenuOpen(false);
+      }
+    };
+
+    if (isWorkflowMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isWorkflowMenuOpen]);
 
   if (isLoadingConversation || isLoadingMessages) {
     return (
@@ -310,6 +337,57 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
                 }
               </span>
             </div>
+
+            {/* Workflow Status Badge and Dropdown */}
+            {conversation.workflowStatus && (
+              <div className="flex items-center gap-2 mt-2">
+                <WorkflowStatusBadge workflowStatus={conversation.workflowStatus} />
+                {!isClosed && (
+                  <div className="relative" ref={workflowMenuRef}>
+                    <button
+                      onClick={() => setIsWorkflowMenuOpen(!isWorkflowMenuOpen)}
+                      className="text-xs px-2 py-1 rounded hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{ color: '#6B7280' }}
+                      aria-label="Change status"
+                    >
+                      {t('common.edit')}
+                    </button>
+
+                    {/* Workflow Status Dropdown */}
+                    {isWorkflowMenuOpen && (
+                      <div className="absolute ltr:left-0 rtl:right-0 mt-2 w-48 rounded-lg shadow-lg bg-white border border-gray-200 z-50">
+                        <div className="py-1">
+                          <button
+                            onClick={() => handleUpdateWorkflowStatus('in_progress')}
+                            disabled={updateWorkflowStatus.isPending}
+                            className="w-full ltr:text-left rtl:text-right px-4 py-2 text-sm hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            style={{ color: '#374151' }}
+                          >
+                            {t('workflowStatus.inProgress')}
+                          </button>
+                          <button
+                            onClick={() => handleUpdateWorkflowStatus('won')}
+                            disabled={updateWorkflowStatus.isPending}
+                            className="w-full ltr:text-left rtl:text-right px-4 py-2 text-sm hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            style={{ color: '#374151' }}
+                          >
+                            {t('workflowStatus.won')}
+                          </button>
+                          <button
+                            onClick={() => handleUpdateWorkflowStatus('lost')}
+                            disabled={updateWorkflowStatus.isPending}
+                            className="w-full ltr:text-left rtl:text-right px-4 py-2 text-sm hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            style={{ color: '#374151' }}
+                          >
+                            {t('workflowStatus.lost')}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}

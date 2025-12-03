@@ -3,6 +3,7 @@ import type {
   Conversation,
   ConversationsResponse,
   ConversationDetailResponse,
+  WorkflowStatus,
 } from '../types/conversation';
 import type {
   Message,
@@ -45,6 +46,7 @@ const transformConversation = (backendConv: any): Conversation => {
     displayName,
     userName: displayName,
     status: backendConv.status,
+    workflowStatus: backendConv.workflowStatus || backendConv.workflow_status,
     context: {
       plate: backendConv.plate || backendConv.context?.plate,
       vehicle: backendConv.vehicle || backendConv.context?.vehicle,
@@ -76,6 +78,7 @@ const transformMessage = (backendMsg: any): Message => {
 export const agentApi = {
   getConversations: async (params: {
     status?: 'open' | 'closed';
+    workflowStatus?: WorkflowStatus;
     page?: number;
     pageSize?: number;
     mine?: boolean;
@@ -166,6 +169,17 @@ export const agentApi = {
     const response = await apiClient.patch<any>(
       `/agent/conversations/${conversationId}/assign`,
       { agentId }
+    );
+    return transformConversation(response.data.conversation);
+  },
+
+  updateWorkflowStatus: async (
+    conversationId: string,
+    workflowStatus: 'in_progress' | 'won' | 'lost'
+  ): Promise<Conversation> => {
+    const response = await apiClient.patch<any>(
+      `/agent/conversations/${conversationId}/workflow-status`,
+      { workflowStatus }
     );
     return transformConversation(response.data.conversation);
   },

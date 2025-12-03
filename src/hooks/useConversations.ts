@@ -1,19 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { agentApi } from '../api/agentApi';
+import type { WorkflowStatus } from '../types/conversation';
 
 export interface ConversationsFilter {
   status?: 'open' | 'closed';
+  workflowStatus?: WorkflowStatus;
   mine?: boolean;
   agentId?: string;
 }
 
 export const useConversations = (filter: ConversationsFilter = {}) => {
-  const { status = 'open', mine = false, agentId } = filter;
+  const { status = 'open', workflowStatus, mine = false, agentId } = filter;
   
   return useQuery({
-    queryKey: ['conversations', status, mine, agentId ?? null],
+    queryKey: ['conversations', { status, workflowStatus: workflowStatus ?? null, mine, agentId: agentId ?? null }],
     queryFn: () => agentApi.getConversations({ 
       status, 
+      workflowStatus,
       page: 1, 
       pageSize: 50,
       mine,
@@ -156,6 +159,64 @@ export const useAssignConversation = () => {
       console.error('[useAssignConversation] Mutation failed', {
         conversationId: variables.conversationId,
         agentId: variables.agentId,
+        error,
+      });
+    },
+  });
+};
+
+export const useUpdateWorkflowStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ conversationId, workflowStatus }: { conversationId: string; workflowStatus: 'in_progress' | 'won' | 'lost' }) =>
+      agentApi.updateWorkflowStatus(conversationId, workflowStatus),
+    onSuccess: (updatedConversation, variables) => {
+      console.log('[useUpdateWorkflowStatus] Mutation success', {
+        conversationId: variables.conversationId,
+        workflowStatus: variables.workflowStatus,
+        updatedConversation,
+      });
+
+      // Update the specific conversation detail cache
+      queryClient.setQueryData(
+        ['conversation', variables.conversationId],
+        (oldData: unknown) => {
+          if (!oldData || typeof oldData !== 'object') return oldData;
+          return {
+            ...oldData as Record<string, unknown>,
+            conversation: updatedConversation,
+          };
+        }
+      );
+
+      // Update conversation in ALL conversation list caches
+      const allQueries = queryClient.getQueriesData({ queryKey: ['conversations'] });
+      console.log('[useUpdateWorkflowStatus] Found', allQueries.length, 'conversation list queries to update');
+      
+      allQueries.forEach(([queryKey, oldData]) => {
+        if (!oldData || typeof oldData !== 'object' || !('items' in oldData) || !Array.isArray(oldData.items)) {
+          return;
+        }
+        
+        queryClient.setQueryData(queryKey, {
+          ...oldData,
+          items: oldData.items.map((conv: Record<string, unknown>) =>
+            conv.id === variables.conversationId ? updatedConversation : conv
+          ),
+        });
+      });
+
+      // Invalidate all conversation queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['conversation', variables.conversationId] });
+      
+      console.log('[useUpdateWorkflowStatus] Cache update complete');
+    },
+    onError: (error, variables) => {
+      console.error('[useUpdateWorkflowStatus] Mutation failed', {
+        conversationId: variables.conversationId,
+        workflowStatus: variables.workflowStatus,
         error,
       });
     },

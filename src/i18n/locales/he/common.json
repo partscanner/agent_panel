@@ -24,6 +24,24 @@
     "searchPlaceholder": "חיפוש שיחות...",
     "showOnlyMyConversations": "הצג רק את השיחות שלי"
   },
+  "conversationFilters": {
+    "open": "פתוחות",
+    "closed": "סגורות",
+    "new": "חדש",
+    "inProgress": "בטיפול",
+    "noAnswer": "אין מענה",
+    "won": "נסגר בהצלחה",
+    "lost": "לא נסגר",
+    "showOnlyMine": "הצג רק את השיחות שלי"
+  },
+  "workflowStatus": {
+    "label": "סטטוס",
+    "new": "חדש",
+    "inProgress": "בטיפול",
+    "noAnswer": "אין מענה",
+    "won": "נסגר בהצלחה",
+    "lost": "לא נסגר"
+  },
   "conversation": {
     "close": "סגור שיחה",
     "closed": "השיחה נסגרה",

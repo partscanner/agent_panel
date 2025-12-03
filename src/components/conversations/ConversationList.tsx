@@ -3,11 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useConversations } from '../../hooks/useConversations';
 import { ConversationListItem } from './ConversationListItem';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import type { WorkflowStatus } from '../../types/conversation';
 
 interface ConversationListProps {
   activeConversationId: string | null;
   onSelectConversation: (id: string) => void;
 }
+
+type FilterOption = 'open' | 'new' | 'in_progress' | 'no_answer' | 'won' | 'lost' | 'closed';
 
 export const ConversationList = ({
   activeConversationId,
@@ -15,7 +18,35 @@ export const ConversationList = ({
 }: ConversationListProps) => {
   const { t } = useTranslation();
   const [showMineOnly, setShowMineOnly] = useState(false);
-  const { data, isLoading, error } = useConversations({ status: 'open', mine: showMineOnly });
+  const [activeFilter, setActiveFilter] = useState<FilterOption>('open');
+  
+  // Map filter to API params
+  const getFilterParams = (filter: FilterOption): { status?: 'open' | 'closed'; workflowStatus?: WorkflowStatus } => {
+    switch (filter) {
+      case 'open':
+        return { status: 'open' };
+      case 'closed':
+        return { status: 'closed' };
+      case 'new':
+        return { status: 'open', workflowStatus: 'new' };
+      case 'in_progress':
+        return { status: 'open', workflowStatus: 'in_progress' };
+      case 'no_answer':
+        return { status: 'open', workflowStatus: 'no_answer' };
+      case 'won':
+        return { workflowStatus: 'won' };
+      case 'lost':
+        return { workflowStatus: 'lost' };
+      default:
+        return { status: 'open' };
+    }
+  };
+  
+  const filterParams = getFilterParams(activeFilter);
+  const { data, isLoading, error } = useConversations({ 
+    ...filterParams,
+    mine: showMineOnly 
+  });
 
   // Debug logging
   console.log('[ConversationList] Full data:', data);
@@ -37,6 +68,27 @@ export const ConversationList = ({
             </p>
           )}
         </div>
+
+        {/* Filter Bar */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {(['open', 'new', 'in_progress', 'no_answer', 'won', 'lost', 'closed'] as FilterOption[]).map((filter) => {
+            const isActive = activeFilter === filter;
+            return (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
+                  isActive
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {t(`conversationFilters.${filter === 'in_progress' ? 'inProgress' : filter === 'no_answer' ? 'noAnswer' : filter}`)}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Show Mine Only Toggle - Enhanced Style */}
         <label className="flex items-center gap-3 cursor-pointer select-none px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
           <div className="relative">

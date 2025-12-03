@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Conversation } from '../../types/conversation';
 import { formatDistanceToNow } from 'date-fns';
 import { ConversationAssignmentMenu } from './ConversationAssignmentMenu';
+import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 
 interface ConversationListItemProps {
   conversation: Conversation;
@@ -112,9 +113,12 @@ export const ConversationListItem = ({
           )}
         </div>
         
-        {/* Zone B: Time and Unread Badge - RTL aware */}
+        {/* Zone B: Time, Workflow Status and Unread Badge - RTL aware */}
         <div className="flex flex-col ltr:items-end rtl:items-start gap-1.5 flex-shrink-0">
           <span className="text-[10px] font-medium whitespace-nowrap" style={{ color: '#6B7280' }}>{lastMessageTime}</span>
+          {conversation.workflowStatus && (
+            <WorkflowStatusBadge workflowStatus={conversation.workflowStatus} />
+          )}
           {shouldShowBadge && (
             <span className="inline-flex min-w-[22px] h-[22px] items-center justify-center rounded-full px-2 text-xs font-semibold shadow-md" style={{ backgroundColor: '#EF4444', color: '#FFFFFF' }}>
               {unreadCount}

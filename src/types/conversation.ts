@@ -1,3 +1,5 @@
+export type WorkflowStatus = 'new' | 'in_progress' | 'no_answer' | 'won' | 'lost';
+
 export interface Conversation {
   id: string;
   customerId: string;
@@ -6,6 +8,7 @@ export interface Conversation {
   displayName?: string;
   userName?: string;
   status: 'open' | 'closed';
+  workflowStatus?: WorkflowStatus;
   context?: ConversationContext;
   lastMessageAt: string;
   createdAt: string;

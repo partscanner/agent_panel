@@ -24,6 +24,24 @@
     "searchPlaceholder": "Search conversations...",
     "showOnlyMyConversations": "Show only my conversations"
   },
+  "conversationFilters": {
+    "open": "Open",
+    "closed": "Closed",
+    "new": "New",
+    "inProgress": "In progress",
+    "noAnswer": "No answer",
+    "won": "Won",
+    "lost": "Lost",
+    "showOnlyMine": "Show only my conversations"
+  },
+  "workflowStatus": {
+    "label": "Status",
+    "new": "New",
+    "inProgress": "In progress",
+    "noAnswer": "No answer",
+    "won": "Won",
+    "lost": "Lost"
+  },
   "conversation": {
     "close": "Close Conversation",
     "closed": "Conversation Closed",
