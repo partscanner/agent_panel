@@ -69,24 +69,25 @@ export const ConversationList = ({
           )}
         </div>
 
-        {/* Filter Bar */}
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {(['open', 'new', 'in_progress', 'no_answer', 'won', 'lost', 'closed'] as FilterOption[]).map((filter) => {
-            const isActive = activeFilter === filter;
-            return (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all ${
-                  isActive
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {t(`conversationFilters.${filter === 'in_progress' ? 'inProgress' : filter === 'no_answer' ? 'noAnswer' : filter}`)}
-              </button>
-            );
-          })}
+        {/* Status Filter Select */}
+        <div className="mb-3">
+          <label className="block text-xs font-medium mb-1.5" style={{ color: '#6B7280' }}>
+            {t('conversationFilters.statusLabel')}
+          </label>
+          <select
+            value={activeFilter}
+            onChange={(e) => setActiveFilter(e.target.value as FilterOption)}
+            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            style={{ color: '#374151' }}
+          >
+            <option value="open">{t('conversationFilters.open')}</option>
+            <option value="new">{t('conversationFilters.new')}</option>
+            <option value="in_progress">{t('conversationFilters.inProgress')}</option>
+            <option value="no_answer">{t('conversationFilters.noAnswer')}</option>
+            <option value="won">{t('conversationFilters.won')}</option>
+            <option value="lost">{t('conversationFilters.lost')}</option>
+            <option value="closed">{t('conversationFilters.closed')}</option>
+          </select>
         </div>
 
         {/* Show Mine Only Toggle - Enhanced Style */}

@@ -1,13 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
-import { useConversation, useMessages, useSendMessage, useCloseConversation, useAgents, useAssignConversation, useUpdateWorkflowStatus } from '../../hooks/useConversations';
+import { useConversation, useMessages, useSendMessage, useCloseConversation } from '../../hooks/useConversations';
 import { MessageList } from '../messages/MessageList';
 import { MessageInput } from '../messages/MessageInput';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { computeUnreadCount } from '../../utils/unreadCounter';
-import { useAuth } from '../../hooks/useAuth';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
+import { ConversationActionsMenu } from './ConversationActionsMenu';
 
 interface ConversationViewProps {
   conversationId: string;
@@ -16,20 +16,12 @@ interface ConversationViewProps {
 export const ConversationView = ({ conversationId }: ConversationViewProps) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { agent: currentAgent } = useAuth();
   const { data: conversationData, isLoading: isLoadingConversation } = useConversation(conversationId);
   const { data: messagesData, isLoading: isLoadingMessages } = useMessages(conversationId);
-  const { data: agents } = useAgents();
   const sendMessage = useSendMessage();
   const closeConversation = useCloseConversation();
-  const assignConversation = useAssignConversation();
-  const updateWorkflowStatus = useUpdateWorkflowStatus();
   const [copySuccess, setCopySuccess] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAgentListOpen, setIsAgentListOpen] = useState(false);
-  const [isWorkflowMenuOpen, setIsWorkflowMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const workflowMenuRef = useRef<HTMLDivElement>(null);
 
   const conversation = conversationData?.conversation;
   const messages = messagesData?.messages || [];
@@ -155,73 +147,6 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
     }
   };
 
-  const handleAssignToMe = async () => {
-    if (!currentAgent) return;
-    try {
-      await assignConversation.mutateAsync({ conversationId, agentId: currentAgent.id });
-      setIsMenuOpen(false);
-    } catch (error) {
-      console.error('Failed to assign conversation:', error);
-    }
-  };
-
-  const handleClearAssignment = async () => {
-    try {
-      await assignConversation.mutateAsync({ conversationId, agentId: null });
-      setIsMenuOpen(false);
-    } catch (error) {
-      console.error('Failed to clear assignment:', error);
-    }
-  };
-
-  const handleAssignToAgent = async (agentId: string) => {
-    try {
-      await assignConversation.mutateAsync({ conversationId, agentId });
-      setIsMenuOpen(false);
-      setIsAgentListOpen(false);
-    } catch (error) {
-      console.error('Failed to assign conversation:', error);
-    }
-  };
-
-  const handleUpdateWorkflowStatus = async (workflowStatus: 'in_progress' | 'won' | 'lost') => {
-    try {
-      await updateWorkflowStatus.mutateAsync({ conversationId, workflowStatus });
-      setIsWorkflowMenuOpen(false);
-    } catch (error) {
-      console.error('Failed to update workflow status:', error);
-    }
-  };
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-        setIsAgentListOpen(false);
-      }
-    };
-
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isMenuOpen]);
-
-  // Close workflow menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (workflowMenuRef.current && !workflowMenuRef.current.contains(event.target as Node)) {
-        setIsWorkflowMenuOpen(false);
-      }
-    };
-
-    if (isWorkflowMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isWorkflowMenuOpen]);
-
   if (isLoadingConversation || isLoadingMessages) {
     return (
       <div className="h-full bg-white">
@@ -338,144 +263,35 @@ export const ConversationView = ({ conversationId }: ConversationViewProps) => {
               </span>
             </div>
 
-            {/* Workflow Status Badge and Dropdown */}
+            {/* Workflow Status Badge - Read Only */}
             {conversation.workflowStatus && (
-              <div className="flex items-center gap-2 mt-2">
+              <div className="mt-2">
                 <WorkflowStatusBadge workflowStatus={conversation.workflowStatus} />
-                {!isClosed && (
-                  <div className="relative" ref={workflowMenuRef}>
-                    <button
-                      onClick={() => setIsWorkflowMenuOpen(!isWorkflowMenuOpen)}
-                      className="text-xs px-2 py-1 rounded hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      style={{ color: '#6B7280' }}
-                      aria-label="Change status"
-                    >
-                      {t('common.edit')}
-                    </button>
-
-                    {/* Workflow Status Dropdown */}
-                    {isWorkflowMenuOpen && (
-                      <div className="absolute ltr:left-0 rtl:right-0 mt-2 w-48 rounded-lg shadow-lg bg-white border border-gray-200 z-50">
-                        <div className="py-1">
-                          <button
-                            onClick={() => handleUpdateWorkflowStatus('in_progress')}
-                            disabled={updateWorkflowStatus.isPending}
-                            className="w-full ltr:text-left rtl:text-right px-4 py-2 text-sm hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            style={{ color: '#374151' }}
-                          >
-                            {t('workflowStatus.inProgress')}
-                          </button>
-                          <button
-                            onClick={() => handleUpdateWorkflowStatus('won')}
-                            disabled={updateWorkflowStatus.isPending}
-                            className="w-full ltr:text-left rtl:text-right px-4 py-2 text-sm hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            style={{ color: '#374151' }}
-                          >
-                            {t('workflowStatus.won')}
-                          </button>
-                          <button
-                            onClick={() => handleUpdateWorkflowStatus('lost')}
-                            disabled={updateWorkflowStatus.isPending}
-                            className="w-full ltr:text-left rtl:text-right px-4 py-2 text-sm hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            style={{ color: '#374151' }}
-                          >
-                            {t('workflowStatus.lost')}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             )}
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 ml-4">
-            {/* Three Dots Menu */}
+            {/* Conversation Actions Menu (Assignment + Workflow Status) */}
             {!isClosed && (
-              <div className="relative" ref={menuRef}>
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                  aria-label="More options"
-                >
-                  <svg className="w-5 h-5" style={{ color: '#6B7280' }} fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                  </svg>
-                </button>
-
-                {/* Dropdown Menu */}
-                {isMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
-                    <div className="py-1">
-                      {/* Assign to Me */}
-                      <button
-                        onClick={handleAssignToMe}
-                        disabled={assignConversation.isPending}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-                        style={{ color: '#374151' }}
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        {t('conversation.assignToMe')}
-                      </button>
-
-                      {/* Clear Assignment */}
-                      <button
-                        onClick={handleClearAssignment}
-                        disabled={assignConversation.isPending}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-                        style={{ color: '#374151' }}
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        {t('conversation.clearAssignment')}
-                      </button>
-
-                      {/* Divider */}
-                      <div className="border-t border-gray-200 my-1"></div>
-
-                      {/* Assign to Another Agent */}
-                      <button
-                        onClick={() => setIsAgentListOpen(!isAgentListOpen)}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 transition-colors flex items-center justify-between gap-2"
-                        style={{ color: '#374151' }}
-                      >
-                        <span className="flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                          </svg>
-                          {t('conversation.assignToSomeone')}
-                        </span>
-                        <svg className={`w-4 h-4 transition-transform ${isAgentListOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-
-                      {/* Agent List */}
-                      {isAgentListOpen && agents && agents.length > 0 && (
-                        <div className="bg-gray-50 max-h-48 overflow-y-auto">
-                          {agents.filter(a => a.id !== currentAgent?.id).map((agent) => (
-                            <button
-                              key={agent.id}
-                              onClick={() => handleAssignToAgent(agent.id)}
-                              disabled={assignConversation.isPending}
-                              className="w-full text-left px-8 py-2 text-sm hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                              style={{ color: '#374151' }}
-                            >
-                              {agent.name}
-                              <span className="text-xs ml-2" style={{ color: '#9CA3AF' }}>({agent.email})</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <ConversationActionsMenu
+                conversation={conversation}
+                isOpen={isMenuOpen}
+                onClose={() => setIsMenuOpen(false)}
+                align="right"
+                trigger={
+                  <button
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className="p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    aria-label="Conversation actions"
+                  >
+                    <svg className="w-5 h-5" style={{ color: '#6B7280' }} fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                    </svg>
+                  </button>
+                }
+              />
             )}
 
             {/* Close Button */}

@@ -25,6 +25,7 @@
     "showOnlyMyConversations": "הצג רק את השיחות שלי"
   },
   "conversationFilters": {
+    "statusLabel": "סטטוס",
     "open": "פתוחות",
     "closed": "סגורות",
     "new": "חדש",
@@ -41,6 +42,12 @@
     "noAnswer": "אין מענה",
     "won": "נסגר בהצלחה",
     "lost": "לא נסגר"
+  },
+  "workflowStatusMenu": {
+    "label": "שינוי סטטוס",
+    "setInProgress": "הגדר סטטוס: בטיפול",
+    "setWon": "הגדר סטטוס: נסגר בהצלחה",
+    "setLost": "הגדר סטטוס: לא נסגר"
   },
   "conversation": {
     "close": "סגור שיחה",

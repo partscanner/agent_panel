@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Conversation } from '../../types/conversation';
 import { formatDistanceToNow } from 'date-fns';
-import { ConversationAssignmentMenu } from './ConversationAssignmentMenu';
+import { ConversationActionsMenu } from './ConversationActionsMenu';
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 
 interface ConversationListItemProps {
@@ -132,11 +132,11 @@ export const ConversationListItem = ({
           style={{ width: '36px' }}
           onClick={(e) => e.stopPropagation()}
         >
-          <ConversationAssignmentMenu
-            conversationId={conversation.id}
+          <ConversationActionsMenu
+            conversation={conversation}
             isOpen={isMenuOpen}
             onClose={() => setIsMenuOpen(false)}
-            position="right"
+            align="right"
             trigger={
               <button
                 onClick={(e) => {
@@ -145,7 +145,7 @@ export const ConversationListItem = ({
                 }}
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 style={{ minWidth: '32px', minHeight: '32px' }}
-                aria-label="Assignment options"
+                aria-label="Conversation actions"
               >
                 <svg className="w-4 h-4" style={{ color: '#6B7280' }} fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />

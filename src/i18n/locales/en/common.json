@@ -25,6 +25,7 @@
     "showOnlyMyConversations": "Show only my conversations"
   },
   "conversationFilters": {
+    "statusLabel": "Status",
     "open": "Open",
     "closed": "Closed",
     "new": "New",
@@ -41,6 +42,12 @@
     "noAnswer": "No answer",
     "won": "Won",
     "lost": "Lost"
+  },
+  "workflowStatusMenu": {
+    "label": "Change Status",
+    "setInProgress": "Set status: In progress",
+    "setWon": "Set status: Won",
+    "setLost": "Set status: Lost"
   },
   "conversation": {
     "close": "Close Conversation",
