@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConversations } from '../../hooks/useConversations';
 import { ConversationListItem } from './ConversationListItem';
@@ -13,7 +14,8 @@ export const ConversationList = ({
   onSelectConversation,
 }: ConversationListProps) => {
   const { t } = useTranslation();
-  const { data, isLoading, error } = useConversations('open');
+  const [showMineOnly, setShowMineOnly] = useState(false);
+  const { data, isLoading, error } = useConversations({ status: 'open', mine: showMineOnly });
 
   // Debug logging
   console.log('[ConversationList] Full data:', data);
@@ -63,9 +65,23 @@ export const ConversationList = ({
   return (
     <div className="h-full flex flex-col bg-white border-r border-neutral-200 shadow-sm">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-5 py-4 flex items-center justify-between " style={{ color: '#111827', backgroundColor: '#F8FAFC' }}>
-        <h2 className="text-lg font-semibold"  style={{ color: '#111827' }}>{t('conversations.title')}</h2>
-        <p className="text-xs mt-0.5" style={{ color: '#6B7280' }}>{conversations.length} {conversations.length === 1 ? 'conversation' : 'conversations'}</p>
+      <div className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-5 py-4" style={{ backgroundColor: '#F8FAFC' }}>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold" style={{ color: '#111827' }}>{t('conversations.title')}</h2>
+          <p className="text-xs" style={{ color: '#6B7280' }}>{conversations.length} {conversations.length === 1 ? 'conversation' : 'conversations'}</p>
+        </div>
+        {/* Show Mine Only Toggle */}
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showMineOnly}
+            onChange={(e) => setShowMineOnly(e.target.checked)}
+            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 cursor-pointer"
+          />
+          <span className="text-sm font-medium" style={{ color: '#374151' }}>
+            {t('conversations.showOnlyMyConversations')}
+          </span>
+        </label>
       </div>
       {/* Conversation List */}
       <div className="flex-1 overflow-y-auto scrollbar-thin " >

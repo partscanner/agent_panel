@@ -19,7 +19,8 @@
     "open": "Open",
     "closed": "Closed",
     "noConversations": "No conversations found",
-    "searchPlaceholder": "Search conversations..."
+    "searchPlaceholder": "Search conversations...",
+    "showOnlyMyConversations": "Show only my conversations"
   },
   "conversation": {
     "close": "Close Conversation",
@@ -27,6 +28,11 @@
     "reply": "Reply",
     "sendMessage": "Send message",
     "typePlaceholder": "Type a message...",
+    "assignedTo": "Assigned to",
+    "unassigned": "Unassigned",
+    "assignToMe": "Assign to me",
+    "clearAssignment": "Clear assignment",
+    "assignToSomeone": "Assign to...",
     "context": {
       "plate": "Plate",
       "vehicle": "Vehicle",
@@ -45,4 +51,3 @@
     "send": "Send"
   }
 }
-

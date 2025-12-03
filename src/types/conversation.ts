@@ -13,6 +13,12 @@ export interface Conversation {
   unreadCount?: number;
   lastMessage?: string;
   lastMessageDirection?: 'inbound' | 'outbound';
+  assignedAgent?: {
+    id: string;
+    name: string;
+    email: string;
+    role: 'agent' | 'admin';
+  } | null;
 }
 
 export interface Vehicle {

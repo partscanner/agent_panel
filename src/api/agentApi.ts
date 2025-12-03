@@ -10,6 +10,7 @@ import type {
   SendMessageRequest,
   SendMessageResponse,
 } from '../types/message';
+import type { Agent, AgentsResponse } from '../types/agent';
 
 // Transform backend conversation to frontend format
 const transformConversation = (backendConv: any): Conversation => {
@@ -26,6 +27,15 @@ const transformConversation = (backendConv: any): Conversation => {
     || backendConv.userName 
     || backendConv.user_name 
     || backendConv.userId?.name;
+
+  // Extract assigned agent
+  const assignedAgent = backendConv.assignedAgent || backendConv.assigned_agent;
+  const transformedAssignedAgent = assignedAgent ? {
+    id: assignedAgent._id || assignedAgent.id,
+    name: assignedAgent.name,
+    email: assignedAgent.email,
+    role: assignedAgent.role,
+  } : null;
 
   return {
     id: backendConv._id || backendConv.id,
@@ -46,6 +56,7 @@ const transformConversation = (backendConv: any): Conversation => {
     unreadCount: backendConv.unreadCount || backendConv.unread_count || 0,
     lastMessage: backendConv.lastMessage || backendConv.lastMessageText || backendConv.last_message_text || backendConv.lastMessagePreview,
     lastMessageDirection: backendConv.lastMessageDirection || backendConv.last_message_direction,
+    assignedAgent: transformedAssignedAgent,
   };
 };
 
@@ -67,9 +78,17 @@ export const agentApi = {
     status?: 'open' | 'closed';
     page?: number;
     pageSize?: number;
+    mine?: boolean;
+    agentId?: string;
   }): Promise<ConversationsResponse> => {
+    // Transform mine boolean to string for backend
+    const backendParams: any = { ...params };
+    if (params.mine !== undefined) {
+      backendParams.mine = params.mine ? 'true' : 'false';
+    }
+    
     const response = await apiClient.get<any>('/agent/conversations', {
-      params,
+      params: backendParams,
     });
     
     // Transform backend response to frontend format
@@ -133,6 +152,22 @@ export const agentApi = {
       `/agent/conversations/${conversationId}/close`
     );
     return response.data;
+  },
+
+  getAgents: async (): Promise<Agent[]> => {
+    const response = await apiClient.get<AgentsResponse>('/agent/agents');
+    return response.data.items || [];
+  },
+
+  assignConversation: async (
+    conversationId: string,
+    agentId: string | null
+  ): Promise<Conversation> => {
+    const response = await apiClient.patch<any>(
+      `/agent/conversations/${conversationId}/assign`,
+      { agentId }
+    );
+    return transformConversation(response.data.conversation);
   },
 };
 

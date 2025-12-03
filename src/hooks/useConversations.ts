@@ -1,10 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { agentApi } from '../api/agentApi';
 
-export const useConversations = (status: 'open' | 'closed' = 'open') => {
+export interface ConversationsFilter {
+  status?: 'open' | 'closed';
+  mine?: boolean;
+  agentId?: string;
+}
+
+export const useConversations = (filter: ConversationsFilter = {}) => {
+  const { status = 'open', mine = false, agentId } = filter;
+  
   return useQuery({
-    queryKey: ['conversations', status],
-    queryFn: () => agentApi.getConversations({ status, page: 1, pageSize: 50 }),
+    queryKey: ['conversations', status, mine, agentId ?? null],
+    queryFn: () => agentApi.getConversations({ 
+      status, 
+      page: 1, 
+      pageSize: 50,
+      mine,
+      agentId,
+    }),
   });
 };
 
@@ -75,6 +89,51 @@ export const useCloseConversation = () => {
     onSuccess: (_, conversationId) => {
       queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    },
+  });
+};
+
+export const useAgents = () => {
+  return useQuery({
+    queryKey: ['agents'],
+    queryFn: agentApi.getAgents,
+    staleTime: 60_000, // Cache for 1 minute
+  });
+};
+
+export const useAssignConversation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ conversationId, agentId }: { conversationId: string; agentId: string | null }) =>
+      agentApi.assignConversation(conversationId, agentId),
+    onSuccess: (updatedConversation, variables) => {
+      // Update the specific conversation detail cache
+      queryClient.setQueryData(
+        ['conversation', variables.conversationId],
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            conversation: updatedConversation,
+          };
+        }
+      );
+
+      // Update conversation in all conversation lists
+      queryClient.setQueryData(['conversations', 'open', false, null], (oldData: any) => {
+        if (!oldData?.items) return oldData;
+        return {
+          ...oldData,
+          items: oldData.items.map((conv: any) =>
+            conv.id === variables.conversationId ? updatedConversation : conv
+          ),
+        };
+      });
+
+      // Invalidate all conversation queries to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['conversation', variables.conversationId] });
     },
   });
 };

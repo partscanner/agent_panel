@@ -19,7 +19,8 @@
     "open": "פתוחות",
     "closed": "סגורות",
     "noConversations": "לא נמצאו שיחות",
-    "searchPlaceholder": "חיפוש שיחות..."
+    "searchPlaceholder": "חיפוש שיחות...",
+    "showOnlyMyConversations": "הצג רק את השיחות שלי"
   },
   "conversation": {
     "close": "סגור שיחה",
@@ -27,6 +28,11 @@
     "reply": "השב",
     "sendMessage": "שלח הודעה",
     "typePlaceholder": "הקלד הודעה...",
+    "assignedTo": "מוקצה ל",
+    "unassigned": "לא מוקצה",
+    "assignToMe": "הקצה לי",
+    "clearAssignment": "נקה הקצאה",
+    "assignToSomeone": "הקצה ל...",
     "context": {
       "plate": "לוחית רישוי",
       "vehicle": "רכב",
@@ -45,4 +51,3 @@
     "send": "שלח"
   }
 }
-

@@ -78,10 +78,19 @@ export const ConversationListItem = ({
             <p className="text-xs truncate mb-2" style={{ color: '#111827' }}>{conversation.lastMessage}</p>
           )}
           
-          {/* Context Info */}
-          {conversation.context && (conversation.context.plate || conversation.context.partDescription) && (
+          {/* Context Info & Assigned Agent */}
+          {(conversation.context || conversation.assignedAgent) && (
             <div className="flex flex-wrap gap-2 mt-2">
-              {conversation.context.plate && (
+              {/* Assigned Agent Badge */}
+              {conversation.assignedAgent && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-md" style={{ color: '#1E40AF', backgroundColor: '#DBEAFE' }}>
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  {conversation.assignedAgent.name}
+                </span>
+              )}
+              {conversation.context?.plate && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-md" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -89,7 +98,7 @@ export const ConversationListItem = ({
                   {conversation.context.plate}
                 </span>
               )}
-              {conversation.context.partDescription && (
+              {conversation.context?.partDescription && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded-md truncate max-w-[150px]" style={{ color: '#1F2937', backgroundColor: '#E5E7EB' }}>
                   🔧 {conversation.context.partDescription}
                 </span>

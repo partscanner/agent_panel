@@ -25,3 +25,8 @@ export interface AuthContextType {
   isLoading: boolean;
 }
 
+export interface AgentsResponse {
+  success: boolean;
+  items: Agent[];
+}
+

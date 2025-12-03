@@ -638,9 +638,176 @@ To build this documentation, the following files were analyzed:
 
 ---
 
+## 8. Assignment Feature (Phase 1 Implementation)
+
+### Overview
+
+The assignment feature allows agents to assign conversations to themselves or other agents, clear assignments, and filter conversations by assigned agent.
+
+### Data Types
+
+#### Conversation Type Update
+
+The `Conversation` interface now includes:
+
+```typescript
+assignedAgent?: {
+  id: string;
+  name: string;
+  email: string;
+  role: 'agent' | 'admin';
+} | null;
+```
+
+This field is populated by the backend and indicates which agent (if any) is assigned to the conversation.
+
+### API Endpoints
+
+Located in `src/api/agentApi.ts`:
+
+#### `getAgents()`
+- **Endpoint:** `GET /agent/agents`
+- **Returns:** `Agent[]` - List of all active agents
+- **Usage:** Populates the "Assign to..." dropdown menu
+- **Cache:** 60 seconds via React Query
+
+#### `assignConversation(conversationId, agentId)`
+- **Endpoint:** `PATCH /agent/conversations/:id/assign`
+- **Body:** `{ agentId: string | null }`
+- **Returns:** Updated `Conversation` object
+- **Usage:** Assign conversation to an agent (or `null` to clear)
+
+#### `getConversations()` - Extended
+Now accepts additional filter parameters:
+- `mine?: boolean` - Filter to conversations assigned to the current agent
+- `agentId?: string` - Filter to conversations assigned to a specific agent
+- Backend converts `mine: true` to `mine: 'true'` query param
+
+### Hooks
+
+Located in `src/hooks/useConversations.ts`:
+
+#### `useAgents()`
+- Fetches list of all agents
+- Cached for 60 seconds
+- Used to populate agent dropdown in assignment menu
+
+#### `useAssignConversation()`
+- Mutation hook for assigning/unassigning conversations
+- Optimistically updates conversation detail cache
+- Invalidates all conversation queries for consistency
+- Shows loading state during assignment
+
+#### `useConversations()` - Updated
+Now accepts a `ConversationsFilter` object:
+```typescript
+interface ConversationsFilter {
+  status?: 'open' | 'closed';
+  mine?: boolean;
+  agentId?: string;
+}
+```
+
+Query key includes all filter params: `['conversations', status, mine, agentId]`
+
+### UI Components
+
+#### ConversationList
+**File:** `src/components/conversations/ConversationList.tsx`
+
+**New Feature:** "Show only my conversations" toggle
+- Checkbox control in the header
+- Local state: `showMineOnly`
+- Passes `{ status: 'open', mine: showMineOnly }` to `useConversations()`
+- Real-time filter without page reload
+
+#### ConversationListItem
+**File:** `src/components/conversations/ConversationListItem.tsx`
+
+**New Feature:** Assigned agent badge
+- Shows assigned agent name in a blue badge
+- Located alongside context info (plate, part description)
+- Icon: User icon
+- Only displayed if `conversation.assignedAgent` is non-null
+
+#### ConversationView
+**File:** `src/components/conversations/ConversationView.tsx`
+
+**New Features:**
+
+1. **Assigned Agent Display**
+   - Shows in header: "Assigned to: [Agent Name]" or "Unassigned"
+   - Icon: User icon
+   - Updates in real-time when assignment changes
+
+2. **Three-Dots Menu**
+   - Kebab menu icon (⋮) in header next to "Close" button
+   - Click-outside-to-close behavior
+   - Menu options:
+     - **"Assign to me"** - Assigns to current logged-in agent
+     - **"Clear assignment"** - Removes assignment (sets to `null`)
+     - **"Assign to..."** - Expandable list of all agents
+       - Shows agent name and email
+       - Filters out current agent from list
+       - Scrollable if many agents
+
+3. **Loading States**
+   - Disable buttons while `assignConversation.isPending`
+   - Visual feedback during assignment operations
+
+### Socket Integration
+
+The existing socket listeners in `src/services/socketClient.ts` handle assignment updates:
+
+- `conversation:updated` event includes updated `assignedAgent` field
+- React Query cache automatically updates via `invalidateQueries`
+- Both conversation detail and list views update in real-time
+
+### Translation Keys
+
+Added to both `en` and `he` locale files:
+
+- `conversations.showOnlyMyConversations` - Toggle label
+- `conversation.assignedTo` - "Assigned to"
+- `conversation.unassigned` - "Unassigned"
+- `conversation.assignToMe` - "Assign to me"
+- `conversation.clearAssignment` - "Clear assignment"
+- `conversation.assignToSomeone` - "Assign to..."
+
+### User Flows
+
+#### Assigning to Self
+1. Agent opens a conversation
+2. Clicks three-dots menu
+3. Selects "Assign to me"
+4. Assignment updates immediately
+5. Badge appears in conversation list and header
+
+#### Assigning to Another Agent
+1. Agent opens a conversation
+2. Clicks three-dots menu
+3. Clicks "Assign to..."
+4. Agent list expands
+5. Selects target agent from list
+6. Assignment updates immediately
+
+#### Filtering Own Conversations
+1. Agent checks "Show only my conversations" toggle
+2. List instantly filters to show only conversations assigned to them
+3. Uncheck to see all open conversations again
+
+### Known Limitations
+
+- No bulk assignment (must assign conversations one at a time)
+- No assignment history (can't see who assigned it previously)
+- Assignment doesn't affect routing/notification logic yet (future phase)
+- No visual indicator if conversation is assigned to someone else (vs unassigned)
+
+---
+
 ## Next Steps for New Features
 
-When implementing new features (assignment, filters, statuses), this documentation should help you:
+When implementing additional features (statuses, tags, etc.), this documentation should help you:
 
 1. **Identify which components to modify** (e.g., `ConversationList` for filters)
 2. **Understand data flow** (React Query → API → Socket updates)
