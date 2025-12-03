@@ -108,32 +108,56 @@ export const useAssignConversation = () => {
     mutationFn: ({ conversationId, agentId }: { conversationId: string; agentId: string | null }) =>
       agentApi.assignConversation(conversationId, agentId),
     onSuccess: (updatedConversation, variables) => {
+      console.log('[useAssignConversation] Mutation success', {
+        conversationId: variables.conversationId,
+        agentId: variables.agentId,
+        updatedConversation,
+      });
+
       // Update the specific conversation detail cache
       queryClient.setQueryData(
         ['conversation', variables.conversationId],
-        (oldData: any) => {
-          if (!oldData) return oldData;
+        (oldData: unknown) => {
+          if (!oldData || typeof oldData !== 'object') return oldData;
+          console.log('[useAssignConversation] Updating conversation detail cache');
           return {
-            ...oldData,
+            ...oldData as Record<string, unknown>,
             conversation: updatedConversation,
           };
         }
       );
 
-      // Update conversation in all conversation lists
-      queryClient.setQueryData(['conversations', 'open', false, null], (oldData: any) => {
-        if (!oldData?.items) return oldData;
-        return {
+      // Update conversation in ALL conversation list caches
+      // We need to update all possible query key combinations
+      const allQueries = queryClient.getQueriesData({ queryKey: ['conversations'] });
+      console.log('[useAssignConversation] Found', allQueries.length, 'conversation list queries to update');
+      
+      allQueries.forEach(([queryKey, oldData]) => {
+        if (!oldData || typeof oldData !== 'object' || !('items' in oldData) || !Array.isArray(oldData.items)) {
+          return;
+        }
+        
+        queryClient.setQueryData(queryKey, {
           ...oldData,
-          items: oldData.items.map((conv: any) =>
+          items: oldData.items.map((conv: Record<string, unknown>) =>
             conv.id === variables.conversationId ? updatedConversation : conv
           ),
-        };
+        });
       });
 
       // Invalidate all conversation queries to ensure consistency
+      // This will refetch in the background
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       queryClient.invalidateQueries({ queryKey: ['conversation', variables.conversationId] });
+      
+      console.log('[useAssignConversation] Cache update complete');
+    },
+    onError: (error, variables) => {
+      console.error('[useAssignConversation] Mutation failed', {
+        conversationId: variables.conversationId,
+        agentId: variables.agentId,
+        error,
+      });
     },
   });
 };

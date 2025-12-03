@@ -25,32 +25,52 @@ export const ConversationAssignmentMenu = ({
   const [isAgentListOpen, setIsAgentListOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Reset internal state when menu is closed
+  useEffect(() => {
+    if (!isOpen) {
+      console.log('[AssignmentMenu] Menu closed, resetting internal state');
+      setIsAgentListOpen(false);
+    }
+  }, [isOpen]);
+
   const handleAssignToMe = async () => {
     if (!currentAgent) return;
+    console.log('[AssignmentMenu] Assigning to me:', currentAgent.id);
     try {
       await assignConversation.mutateAsync({ conversationId, agentId: currentAgent.id });
-      onClose();
+      console.log('[AssignmentMenu] Assignment successful');
     } catch (error) {
-      console.error('Failed to assign conversation:', error);
+      console.error('[AssignmentMenu] Failed to assign conversation:', error);
+    } finally {
+      // Always close the menu, even if there was an error
+      onClose();
     }
   };
 
   const handleClearAssignment = async () => {
+    console.log('[AssignmentMenu] Clearing assignment');
     try {
       await assignConversation.mutateAsync({ conversationId, agentId: null });
-      onClose();
+      console.log('[AssignmentMenu] Assignment cleared successfully');
     } catch (error) {
-      console.error('Failed to clear assignment:', error);
+      console.error('[AssignmentMenu] Failed to clear assignment:', error);
+    } finally {
+      // Always close the menu, even if there was an error
+      onClose();
     }
   };
 
   const handleAssignToAgent = async (agentId: string) => {
+    console.log('[AssignmentMenu] Assigning to agent:', agentId);
     try {
       await assignConversation.mutateAsync({ conversationId, agentId });
-      onClose();
-      setIsAgentListOpen(false);
+      console.log('[AssignmentMenu] Assignment successful');
     } catch (error) {
-      console.error('Failed to assign conversation:', error);
+      console.error('[AssignmentMenu] Failed to assign conversation:', error);
+    } finally {
+      // Always close the menu and collapse the agent list
+      setIsAgentListOpen(false);
+      onClose();
     }
   };
 
@@ -58,14 +78,17 @@ export const ConversationAssignmentMenu = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose();
+        console.log('[AssignmentMenu] Click outside detected, closing menu');
         setIsAgentListOpen(false);
+        onClose();
       }
     };
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
     }
   }, [isOpen, onClose]);
 

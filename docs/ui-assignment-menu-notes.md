@@ -306,6 +306,136 @@ Potential improvements for future iterations:
 
 ---
 
+---
+
+## Bug Fix: Menu Blocking After Clear Assignment
+
+> **Date:** December 3, 2025  
+> **Issue:** Menu becomes unresponsive after assign/clear cycles  
+> **Status:** ✅ RESOLVED
+
+### Symptoms
+
+After assigning a conversation to an agent and then clearing the assignment, the assignment menu would become "blocked":
+- Menu would stop responding to clicks
+- Actions (assign/clear) would no longer work
+- Menu might appear stuck in expanded state
+- Required full page refresh to restore functionality
+
+### Root Cause Analysis
+
+The bug was caused by **stale internal state** in the `ConversationAssignmentMenu` component:
+
+1. **Internal State Not Reset:**
+   - Component had internal state `isAgentListOpen` to track agent list expansion
+   - When menu closed (`isOpen` prop changed from `true` to `false`), this internal state was NOT reset
+   - On next menu open, component would start with stale state from previous interaction
+
+2. **Incomplete Error Handling:**
+   - Mutation handlers called `onClose()` after successful mutation
+   - But if mutation failed or threw error, menu might not close properly
+   - No `finally` block to ensure cleanup in all cases
+
+3. **Cache Update Race Condition:**
+   - `useAssignConversation` mutation only updated one specific cache key: `['conversations', 'open', false, null]`
+   - When user had filters active (e.g., "show only my conversations"), the cache key would be different
+   - Menu would close, but UI wouldn't reflect the change
+   - Next menu open would operate on stale cached data
+
+4. **Event Handler Cleanup:**
+   - Click-outside handler was properly cleaned up
+   - But component re-renders during cache updates could create stale closures
+   - Event handlers might reference old state values
+
+### The Fix
+
+**1. Added State Reset Effect** (`ConversationAssignmentMenu.tsx`):
+```typescript
+// Reset internal state when menu is closed
+useEffect(() => {
+  if (!isOpen) {
+    console.log('[AssignmentMenu] Menu closed, resetting internal state');
+    setIsAgentListOpen(false);
+  }
+}, [isOpen]);
+```
+
+**2. Improved Error Handling with Finally Block:**
+```typescript
+const handleAssignToMe = async () => {
+  // ...
+  try {
+    await assignConversation.mutateAsync({ conversationId, agentId: currentAgent.id });
+  } catch (error) {
+    console.error('[AssignmentMenu] Failed to assign conversation:', error);
+  } finally {
+    // Always close the menu, even if there was an error
+    onClose();
+  }
+};
+```
+
+**3. Robust Cache Updates** (`useConversations.ts`):
+```typescript
+// Update conversation in ALL conversation list caches
+const allQueries = queryClient.getQueriesData({ queryKey: ['conversations'] });
+
+allQueries.forEach(([queryKey, oldData]) => {
+  if (!oldData || typeof oldData !== 'object' || !('items' in oldData)) return;
+  
+  queryClient.setQueryData(queryKey, {
+    ...oldData,
+    items: oldData.items.map((conv) =>
+      conv.id === variables.conversationId ? updatedConversation : conv
+    ),
+  });
+});
+```
+
+**4. Added Debug Logging:**
+- All mutation handlers now log actions for easier debugging
+- Cache update logs show how many queries were updated
+- Click-outside events are logged
+
+### Files Modified
+
+- **`src/components/conversations/ConversationAssignmentMenu.tsx`**
+  - Added `useEffect` to reset `isAgentListOpen` when menu closes
+  - Added `finally` blocks to all mutation handlers
+  - Added debug console logs
+
+- **`src/hooks/useConversations.ts`**
+  - Changed cache update strategy to update ALL conversation list queries (not just one specific key)
+  - Fixed TypeScript linting issues (replaced `any` with proper types)
+  - Added `onError` handler to log mutation failures
+  - Added debug console logs
+
+### Testing Performed
+
+✅ Verified fix on http://localhost:5173:
+- ✅ Assign → Clear → Assign → Clear cycle works 10+ times consecutively
+- ✅ Menu opens and closes cleanly each time
+- ✅ All actions (assign to me, clear, assign to agent) work correctly
+- ✅ "Show only my conversations" filter works correctly with assignment changes
+- ✅ Cache updates properly reflect in UI immediately
+- ✅ Works in both English (LTR) and Hebrew (RTL)
+
+### Prevention
+
+To prevent similar issues in the future:
+
+1. **Always reset component state** when external props change (use `useEffect` with prop dependencies)
+2. **Always use finally blocks** in async handlers to ensure cleanup happens
+3. **Update all matching cache queries** instead of hardcoding specific query keys
+4. **Add debug logging** to critical state transitions and mutations
+5. **Test repeated actions** (not just single use) to catch state accumulation bugs
+
+### Related Changes
+
+This bug fix was implemented alongside the UI refinement work. The visual improvements (spacing, colors, typography) were cosmetic only and did not affect functionality.
+
+---
+
 ## Conclusion
 
 The assignment menu now provides a polished, modern interface that:
@@ -313,7 +443,8 @@ The assignment menu now provides a polished, modern interface that:
 - Enhances usability with comfortable spacing and touch targets
 - Provides better visual feedback with color-coded hover states
 - Supports RTL layouts seamlessly
-- Maintains all existing functionality without breaking changes
+- **Works reliably through multiple assign/clear cycles without blocking**
+- **Properly handles errors and edge cases**
 
 The improved design aligns with modern UI best practices while remaining consistent with the app's existing design language.
 
