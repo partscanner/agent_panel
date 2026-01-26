@@ -63,7 +63,7 @@ export const ConversationList = ({
 
   const isFiltered = showMineOnly;
 
-  // Intersection Observer para infinite scroll
+  // Intersection Observer for infinite scroll
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const handleObserver = useCallback(
@@ -205,19 +205,16 @@ export const ConversationList = ({
               />
             ))}
 
-            {/* Infinite scroll trigger - elemento observado */}
+            {/* Infinite scroll trigger */}
             <div ref={observerTarget} className="h-20 flex items-center justify-center">
               {isFetchingNextPage && (
-                <div className="flex items-center gap-2 text-sm" style={{ color: '#6B7280' }}>
-                  <LoadingSpinner />
-                  <span>Cargando más conversaciones...</span>
-                </div>
+                <LoadingSpinner />
               )}
               {!hasNextPage && conversations.length > 0 && (
                 <p className="text-xs text-center py-4" style={{ color: '#9CA3AF' }}>
                   {conversations.length === totalConversations
-                    ? 'Todas las conversaciones cargadas'
-                    : 'No hay más conversaciones'}
+                    ? 'All conversations loaded'
+                    : 'No more conversations'}
                 </p>
               )}
             </div>

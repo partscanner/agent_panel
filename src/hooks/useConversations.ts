@@ -26,7 +26,7 @@ export const useConversations = (filter: ConversationsFilter = {}) => {
       const currentPage = lastPage.page;
       const totalPages = Math.ceil(lastPage.total / lastPage.pageSize);
 
-      // Si hay más páginas, devolver el número de la siguiente página
+      // If there are more pages, return the next page number
       return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     initialPageParam: 1,
