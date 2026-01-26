@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { agentApi } from '../api/agentApi';
 import type { WorkflowStatus } from '../types/conversation';
 
@@ -11,17 +11,25 @@ export interface ConversationsFilter {
 
 export const useConversations = (filter: ConversationsFilter = {}) => {
   const { status = 'open', workflowStatus, mine = false, agentId } = filter;
-  
-  return useQuery({
+
+  return useInfiniteQuery({
     queryKey: ['conversations', { status, workflowStatus: workflowStatus ?? null, mine, agentId: agentId ?? null }],
-    queryFn: () => agentApi.getConversations({ 
-      status, 
+    queryFn: ({ pageParam = 1 }) => agentApi.getConversations({
+      status,
       workflowStatus,
-      page: 1, 
+      page: pageParam,
       pageSize: 50,
       mine,
       agentId,
     }),
+    getNextPageParam: (lastPage) => {
+      const currentPage = lastPage.page;
+      const totalPages = Math.ceil(lastPage.total / lastPage.pageSize);
+
+      // Si hay más páginas, devolver el número de la siguiente página
+      return currentPage < totalPages ? currentPage + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
 };
 
@@ -49,33 +57,38 @@ export const useSendMessage = () => {
       agentApi.sendMessage(conversationId, { text }),
     onSuccess: (_, variables) => {
       console.log('[Unread] Agent sent reply, resetting unread count to 0 for conversation:', variables.conversationId);
-      
-      // Optimistically set unread count to 0 (agent just replied)
-      ['open', 'closed'].forEach((status) => {
-        queryClient.setQueryData(['conversations', status], (oldData: any) => {
-          if (!oldData?.items) return oldData;
-          
-          return {
-            ...oldData,
-            items: oldData.items.map((conv: any) => {
+
+      // Update all conversation list caches (infinite query structure)
+      const allQueries = queryClient.getQueriesData({ queryKey: ['conversations'] });
+
+      allQueries.forEach(([queryKey, oldData]) => {
+        if (!oldData || typeof oldData !== 'object' || !('pages' in oldData) || !Array.isArray(oldData.pages)) {
+          return;
+        }
+
+        queryClient.setQueryData(queryKey, {
+          ...oldData,
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            items: page.items.map((conv: any) => {
               if (conv.id !== variables.conversationId) return conv;
-              
+
               console.log('[Unread] Resetting unread count', {
                 conversationId: variables.conversationId,
                 previousUnread: conv.unreadCount ?? 0,
                 nextUnread: 0,
               });
-              
-              return { 
-                ...conv, 
-                unreadCount: 0, 
-                lastMessageDirection: 'outbound' 
+
+              return {
+                ...conv,
+                unreadCount: 0,
+                lastMessageDirection: 'outbound'
               };
             }),
-          };
+          })),
         });
       });
-      
+
       // Invalidate messages and conversations to get fresh data
       // The useEffect in ConversationView will recompute unread count from messages
       queryClient.invalidateQueries({ queryKey: ['messages', variables.conversationId] });
@@ -130,21 +143,23 @@ export const useAssignConversation = () => {
         }
       );
 
-      // Update conversation in ALL conversation list caches
-      // We need to update all possible query key combinations
+      // Update conversation in ALL conversation list caches (infinite query structure)
       const allQueries = queryClient.getQueriesData({ queryKey: ['conversations'] });
       console.log('[useAssignConversation] Found', allQueries.length, 'conversation list queries to update');
-      
+
       allQueries.forEach(([queryKey, oldData]) => {
-        if (!oldData || typeof oldData !== 'object' || !('items' in oldData) || !Array.isArray(oldData.items)) {
+        if (!oldData || typeof oldData !== 'object' || !('pages' in oldData) || !Array.isArray(oldData.pages)) {
           return;
         }
-        
+
         queryClient.setQueryData(queryKey, {
           ...oldData,
-          items: oldData.items.map((conv: Record<string, unknown>) =>
-            conv.id === variables.conversationId ? updatedConversation : conv
-          ),
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            items: page.items.map((conv: Record<string, unknown>) =>
+              conv.id === variables.conversationId ? updatedConversation : conv
+            ),
+          })),
         });
       });
 
@@ -152,7 +167,7 @@ export const useAssignConversation = () => {
       // This will refetch in the background
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       queryClient.invalidateQueries({ queryKey: ['conversation', variables.conversationId] });
-      
+
       console.log('[useAssignConversation] Cache update complete');
     },
     onError: (error, variables) => {
@@ -190,27 +205,30 @@ export const useUpdateWorkflowStatus = () => {
         }
       );
 
-      // Update conversation in ALL conversation list caches
+      // Update conversation in ALL conversation list caches (infinite query structure)
       const allQueries = queryClient.getQueriesData({ queryKey: ['conversations'] });
       console.log('[useUpdateWorkflowStatus] Found', allQueries.length, 'conversation list queries to update');
-      
+
       allQueries.forEach(([queryKey, oldData]) => {
-        if (!oldData || typeof oldData !== 'object' || !('items' in oldData) || !Array.isArray(oldData.items)) {
+        if (!oldData || typeof oldData !== 'object' || !('pages' in oldData) || !Array.isArray(oldData.pages)) {
           return;
         }
-        
+
         queryClient.setQueryData(queryKey, {
           ...oldData,
-          items: oldData.items.map((conv: Record<string, unknown>) =>
-            conv.id === variables.conversationId ? updatedConversation : conv
-          ),
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            items: page.items.map((conv: Record<string, unknown>) =>
+              conv.id === variables.conversationId ? updatedConversation : conv
+            ),
+          })),
         });
       });
 
       // Invalidate all conversation queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       queryClient.invalidateQueries({ queryKey: ['conversation', variables.conversationId] });
-      
+
       console.log('[useUpdateWorkflowStatus] Cache update complete');
     },
     onError: (error, variables) => {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConversations } from '../../hooks/useConversations';
 import { ConversationListItem } from './ConversationListItem';
@@ -19,7 +19,7 @@ export const ConversationList = ({
   const { t } = useTranslation();
   const [showMineOnly, setShowMineOnly] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterOption>('open');
-  
+
   // Map filter to API params
   const getFilterParams = (filter: FilterOption): { status?: 'open' | 'closed'; workflowStatus?: WorkflowStatus } => {
     switch (filter) {
@@ -41,20 +41,57 @@ export const ConversationList = ({
         return { status: 'open' };
     }
   };
-  
+
   const filterParams = getFilterParams(activeFilter);
-  const { data, isLoading, error } = useConversations({ 
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useConversations({
     ...filterParams,
-    mine: showMineOnly 
+    mine: showMineOnly
   });
 
-  // Debug logging
-  console.log('[ConversationList] Full data:', data);
-  console.log('[ConversationList] Items:', data?.items);
-  console.log('[ConversationList] Items length:', data?.items?.length);
+  // Flatten all pages into a single array
+  const conversations = data?.pages.flatMap(page => page.items) || [];
 
-  const conversations = data?.items || [];
+  // Get total count from the first page (backend returns total in every page)
+  const totalConversations = data?.pages[0]?.total || 0;
+
   const isFiltered = showMineOnly;
+
+  // Intersection Observer para infinite scroll
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [target] = entries;
+      if (target.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        console.log('[ConversationList] Loading more conversations...');
+        fetchNextPage();
+      }
+    },
+    [fetchNextPage, hasNextPage, isFetchingNextPage]
+  );
+
+  // Setup intersection observer
+  useEffect(() => {
+    const element = observerTarget.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(handleObserver, {
+      root: null,
+      rootMargin: '100px', // Start loading 100px before reaching the bottom
+      threshold: 0.1,
+    });
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [handleObserver]);
 
   return (
     <div className="h-full flex flex-col bg-white border-r border-neutral-200 shadow-sm">
@@ -63,8 +100,14 @@ export const ConversationList = ({
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold" style={{ color: '#111827' }}>{t('conversations.title')}</h2>
           {!isLoading && !error && (
-            <p className="text-xs" style={{ color: '#6B7280' }}>
-              {conversations.length} {conversations.length === 1 ? 'conversation' : 'conversations'}
+            <p className="text-xs font-medium" style={{ color: '#6B7280' }}>
+              {conversations.length === totalConversations ? (
+                // Todas cargadas
+                <>{totalConversations} {totalConversations === 1 ? 'conversation' : 'conversations'}</>
+              ) : (
+                // Mostrando X de Y
+                <>{conversations.length} de {totalConversations}</>
+              )}
             </p>
           )}
         </div>
@@ -152,14 +195,33 @@ export const ConversationList = ({
             </div>
           </div>
         ) : (
-          conversations.map((conversation) => (
-            <ConversationListItem
-              key={conversation.id}
-              conversation={conversation}
-              isActive={activeConversationId === conversation.id}
-              onClick={() => onSelectConversation(conversation.id)}
-            />
-          ))
+          <>
+            {conversations.map((conversation) => (
+              <ConversationListItem
+                key={conversation.id}
+                conversation={conversation}
+                isActive={activeConversationId === conversation.id}
+                onClick={() => onSelectConversation(conversation.id)}
+              />
+            ))}
+
+            {/* Infinite scroll trigger - elemento observado */}
+            <div ref={observerTarget} className="h-20 flex items-center justify-center">
+              {isFetchingNextPage && (
+                <div className="flex items-center gap-2 text-sm" style={{ color: '#6B7280' }}>
+                  <LoadingSpinner />
+                  <span>Cargando más conversaciones...</span>
+                </div>
+              )}
+              {!hasNextPage && conversations.length > 0 && (
+                <p className="text-xs text-center py-4" style={{ color: '#9CA3AF' }}>
+                  {conversations.length === totalConversations
+                    ? 'Todas las conversaciones cargadas'
+                    : 'No hay más conversaciones'}
+                </p>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
