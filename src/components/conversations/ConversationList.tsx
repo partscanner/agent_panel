@@ -102,11 +102,11 @@ export const ConversationList = ({
           {!isLoading && !error && (
             <p className="text-xs font-medium" style={{ color: '#6B7280' }}>
               {conversations.length === totalConversations ? (
-                // Todas cargadas
+                // All loaded
                 <>{totalConversations} {totalConversations === 1 ? 'conversation' : 'conversations'}</>
               ) : (
-                // Mostrando X de Y
-                <>{conversations.length} de {totalConversations}</>
+                // Showing X of Y
+                <>{conversations.length} of {totalConversations}</>
               )}
             </p>
           )}
