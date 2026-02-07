@@ -42,8 +42,7 @@ A modern React-based dashboard for customer service agents to manage conversatio
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/Alenwuhl/agent_panel_chatbot.git
-cd agent_panel_chatbot
+git clone https://github.com/partscanner/agent_panel.git
 ```
 
 2. Install dependencies:
