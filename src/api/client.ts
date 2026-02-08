@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://chatbot-server-isl4.onrender.com';
+// Ensure fallback works even if Vite replaces env var with undefined
+const envValue = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = envValue && envValue !== 'undefined' ? envValue : 'https://chatbot-server-isl4.onrender.com';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,

@@ -1,7 +1,9 @@
 import { io, Socket } from 'socket.io-client';
 import type { QueryClient } from '@tanstack/react-query';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://chatbot-server-isl4.onrender.com';
+// Ensure fallback works even if Vite replaces env var with undefined
+const envSocketUrl = import.meta.env.VITE_SOCKET_URL;
+const SOCKET_URL = envSocketUrl && envSocketUrl !== 'undefined' ? envSocketUrl : 'https://chatbot-server-isl4.onrender.com';
 
 class SocketClient {
   private socket: Socket | null = null;
