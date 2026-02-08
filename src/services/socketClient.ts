@@ -1,7 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 import type { QueryClient } from '@tanstack/react-query';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://chatbot-server-isl4.onrender.com';
 
 class SocketClient {
   private socket: Socket | null = null;
